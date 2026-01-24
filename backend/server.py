@@ -457,18 +457,45 @@ async def get_job(job_id: str):
 
 @api_router.post("/jobs")
 async def create_job(job_data: JobCreate, request: Request, session_token: Optional[str] = Cookie(None)):
-    """Create a new job (requires credits)"""
+    """Create a new job (requires active subscription)"""
     user = await get_current_recruiter(request, session_token)
     
-    # Check recruiter credits
-    profile = await db.recruiter_profiles.find_one({"user_id": user.user_id}, {"_id": 0})
-    if not profile or profile.get("credits", 0) < 1:
-        raise HTTPException(status_code=402, detail="Insufficient credits. Please purchase credits to post a job.")
+    # Check recruiter subscription
+    profile = await db.recruiter_profiles.find_one({" user_id": user.user_id}, {"_id": 0})
+    if not profile:
+        raise HTTPException(status_code=404, detail="Recruiter profile not found")
     
-    # Deduct credit
+    # Define job limits per plan
+    plan_limits = {
+        "free": 1,
+        "basic": 10,
+        "premium": 50,
+        "enterprise": 999
+    }
+    
+    subscription_plan = profile.get("subscription_plan", "free")
+    subscription_status = profile.get("subscription_status", "inactive")
+    jobs_posted = profile.get("jobs_posted_this_month", 0)
+    job_limit = plan_limits.get(subscription_plan, 0)
+    
+    # Check if subscription is active (except for free plan's first job)
+    if subscription_plan != "free" and subscription_status != "active":
+        raise HTTPException(
+            status_code=402,
+            detail="Your subscription has expired. Please renew to post more jobs."
+        )
+    
+    # Check job posting limit
+    if jobs_posted >= job_limit:
+        raise HTTPException(
+            status_code=402,
+            detail=f"You have reached your job posting limit ({job_limit} jobs/month) for the {subscription_plan} plan. Please upgrade your subscription."
+        )
+    
+    # Increment jobs posted count
     await db.recruiter_profiles.update_one(
         {"user_id": user.user_id},
-        {"$inc": {"credits": -1}}
+        {"$inc": {"jobs_posted_this_month": 1}}
     )
     
     # Create job
