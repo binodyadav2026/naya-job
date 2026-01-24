@@ -184,7 +184,7 @@ export default function JobSeekerProfile() {
                 id="preferred_salary_max"
                 name="preferred_salary_max"
                 type="number"
-                value={profile.preferred_salary_max}
+                value={profile.preferred_salary_max || ''}
                 onChange={handleChange}
                 className="mt-1"
                 placeholder="e.g., 80000"
