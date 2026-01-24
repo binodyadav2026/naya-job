@@ -1000,13 +1000,13 @@ async def delete_user(user_id: str, request: Request, session_token: Optional[st
     return {"message": "User deleted"}
 
 @api_router.get("/admin/jobs")
-async def get_all_jobs_admin(status: Optional[str] = None, request: Request = None, session_token: Optional[str] = Cookie(None)):
+async def get_all_jobs_admin(status: Optional[str] = None, skip: int = 0, limit: int = 100, request: Request = None, session_token: Optional[str] = Cookie(None)):
     """Get all jobs (admin only)"""
     await get_current_admin(request, session_token)
     query = {}
     if status:
         query["status"] = status
-    jobs = await db.jobs.find(query, {"_id": 0}).sort("posted_at", -1).to_list(1000)
+    jobs = await db.jobs.find(query, {"_id": 0}).sort("posted_at", -1).skip(skip).limit(limit).to_list(limit)
     return jobs
 
 @api_router.put("/admin/jobs/{job_id}/approve")
