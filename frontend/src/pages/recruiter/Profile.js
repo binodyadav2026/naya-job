@@ -83,7 +83,7 @@ export default function RecruiterProfile() {
             <Input
               id="company_name"
               name="company_name"
-              value={profile.company_name}
+              value={profile.company_name || ''}
               onChange={handleChange}
               required
               className="mt-1"
@@ -96,7 +96,7 @@ export default function RecruiterProfile() {
               id="company_website"
               name="company_website"
               type="url"
-              value={profile.company_website}
+              value={profile.company_website || ''}
               onChange={handleChange}
               placeholder="https://example.com"
               className="mt-1"
@@ -108,7 +108,7 @@ export default function RecruiterProfile() {
             <textarea
               id="company_description"
               name="company_description"
-              value={profile.company_description}
+              value={profile.company_description || ''}
               onChange={handleChange}
               rows={6}
               className="mt-1 w-full rounded-md border border-slate-200 p-2 focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
