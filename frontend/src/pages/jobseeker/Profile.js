@@ -99,7 +99,7 @@ export default function JobSeekerProfile() {
               <Input
                 id="location"
                 name="location"
-                value={profile.location}
+                value={profile.location || ''}
                 onChange={handleChange}
                 placeholder="e.g., New York, NY"
                 className="mt-1"
