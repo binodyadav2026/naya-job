@@ -258,7 +258,7 @@ export default function PostJob() {
 
           <div className="border-t pt-6">
             <p className="text-sm text-slate-600 mb-4">
-              Posting this job will deduct 1 credit from your account. Your job will be reviewed by our admin team before going live.
+              Your job will be reviewed by our admin team before going live. Active subscription required to post jobs.
             </p>
             <Button
               type="submit"
