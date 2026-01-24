@@ -197,7 +197,7 @@ class JobSiteAPITester:
                 "company_name": "Test Company",
                 "company_website": "https://testcompany.com",
                 "company_description": "A test company for testing purposes",
-                "credits": 5  # Give some credits for testing
+                "credits": 0  # Start with no credits for testing
             }
             
             self.run_test(
