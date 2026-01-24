@@ -263,9 +263,9 @@ export default function PostJob() {
             <Button
               type="submit"
               className="w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-full py-6 font-semibold"
-              disabled={posting || credits < 1}
+              disabled={posting || profile.subscription_status !== 'active'}
             >
-              {posting ? 'Posting...' : credits < 1 ? 'Need Credits to Post' : 'Post Job (1 Credit)'}
+              {posting ? 'Posting...' : profile.subscription_status !== 'active' ? 'Upgrade Plan to Post' : 'Post Job'}
             </Button>
           </div>
         </form>
