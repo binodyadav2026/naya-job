@@ -605,11 +605,16 @@ async def get_my_applications(request: Request, session_token: Optional[str] = C
     
     applications = await db.applications.find({"job_seeker_id": user.user_id}, {"_id": 0}).sort("applied_at", -1).to_list(100)
     
-    # Enrich with job details
+    # Collect all unique job IDs
+    job_ids = list(set(app["job_id"] for app in applications))
+    
+    # Fetch all jobs in one query
+    jobs_cursor = db.jobs.find({"job_id": {"$in": job_ids}}, {"_id": 0})
+    jobs_dict = {job["job_id"]: job async for job in jobs_cursor}
+    
+    # Enrich applications with job details
     for app in applications:
-        job = await db.jobs.find_one({"job_id": app["job_id"]}, {"_id": 0})
-        if job:
-            app["job"] = job
+        app["job"] = jobs_dict.get(app["job_id"])
     
     return applications
 
