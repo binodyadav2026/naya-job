@@ -30,7 +30,9 @@ razorpay_key_secret = os.environ.get('RAZORPAY_KEY_SECRET', '')
 razorpay_client = razorpay.Client(auth=(razorpay_key_id, razorpay_key_secret)) if razorpay_key_id and razorpay_key_secret else None
 
 # JWT configuration
-JWT_SECRET = os.environ.get('JWT_SECRET_KEY', 'your-super-secret-jwt-key-change-in-production')
+JWT_SECRET = os.environ.get('JWT_SECRET_KEY')
+if not JWT_SECRET:
+    raise RuntimeError("JWT_SECRET_KEY environment variable is required")
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 7
 
