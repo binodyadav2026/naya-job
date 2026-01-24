@@ -36,7 +36,10 @@ export default function RecruiterDashboard() {
         api.get('/jobs/recruiter/my-jobs'),
       ]);
       setStats({
-        credits: profileRes.data.credits,
+        subscription_plan: profileRes.data.subscription_plan || 'free',
+        subscription_status: profileRes.data.subscription_status || 'inactive',
+        subscription_end: profileRes.data.subscription_end,
+        jobs_posted_this_month: profileRes.data.jobs_posted_this_month || 0,
         jobs: jobsRes.data,
       });
     } catch (error) {
