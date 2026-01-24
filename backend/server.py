@@ -684,7 +684,7 @@ async def get_conversation(other_user_id: str, request: Request, session_token: 
             {"sender_id": user.user_id, "receiver_id": other_user_id},
             {"sender_id": other_user_id, "receiver_id": user.user_id}
         ]
-    }, {"_id": 0}).sort("created_at", 1).to_list(1000)
+    }, {"_id": 0}).sort("created_at", 1).to_list(100)
     
     # Mark messages as read
     await db.messages.update_many(
