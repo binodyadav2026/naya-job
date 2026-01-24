@@ -1,0 +1,152 @@
+{
+  "identity": {
+    "name": "E1: The Anti-AI Designer",
+    "mission": "Create a job platform that feels human, trustworthy, and efficient, avoiding generic 'Bootstrap' aesthetics.",
+    "principles": [
+      "Fusion over Imitation: Mix Swiss precision with organic warmth.",
+      "Content is King: Every pixel must serve the job seeker's clarity or the recruiter's efficiency.",
+      "Negative Space: Use 2-3x more whitespace than standard templates.",
+      "Contrast: High contrast for readability, subtle textures for depth."
+    ]
+  },
+  "typography": {
+    "fonts": {
+      "heading": {
+        "family": "Manrope, sans-serif",
+        "weights": ["600", "700", "800"],
+        "tracking": "-0.02em",
+        "usage": "All headings (h1-h6), hero text, major stats."
+      },
+      "body": {
+        "family": "Inter, sans-serif",
+        "weights": ["400", "500"],
+        "tracking": "0",
+        "usage": "Paragraphs, UI labels, table data."
+      },
+      "mono": {
+        "family": "JetBrains Mono, monospace",
+        "usage": "Job IDs, code snippets, technical skills tags."
+      }
+    },
+    "rules": [
+      "Never use Inter for Headings.",
+      "Headings > 32px must use tracking-tight.",
+      "Overlines/Labels must be Uppercase + tracking-widest + text-xs."
+    ]
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "DEFAULT": "#0F172A",
+        "foreground": "#F8FAFC",
+        "description": "Deep Navy - Authority, Trust. Use for primary buttons, active states, sidebar backgrounds."
+      },
+      "secondary": {
+        "DEFAULT": "#F1F5F9",
+        "foreground": "#0F172A",
+        "description": "Slate 100 - Soft background for cards, secondary buttons."
+      },
+      "accent": {
+        "DEFAULT": "#4F46E5",
+        "foreground": "#FFFFFF",
+        "description": "Electric Indigo - Call to actions, links, progress bars. High energy."
+      },
+      "background": {
+        "light": "#FFFFFF",
+        "dark": "#020617",
+        "subtle": "#F8FAFC"
+      },
+      "text": {
+        "primary": "#0F172A",
+        "secondary": "#64748B",
+        "muted": "#94A3B8"
+      },
+      "status": {
+        "success": "#10B981",
+        "warning": "#F59E0B",
+        "error": "#EF4444",
+        "info": "#3B82F6"
+      }
+    },
+    "rules": [
+      "No gradients on text.",
+      "No full-screen gradients. Use subtle noise or grain textures instead.",
+      "Dark mode is reserved for the Landing Page Hero and specific high-impact dashboard widgets.",
+      "Dashboard panels (Recruiter/Admin) should use a dark sidebar (#0F172A) with a light content area."
+    ]
+  },
+  "layout": {
+    "spacing_scale": "p-1, p-2, p-4, p-6, p-8, p-12, p-16, p-20, p-24, p-32",
+    "grid_systems": {
+      "marketing": {
+        "type": "Bento Grid",
+        "columns": "grid-cols-1 md:grid-cols-12",
+        "gap": "gap-8",
+        "rules": "Asymmetrical spans. Never fill 100% perfectly. Leave breathing room."
+      },
+      "dashboard": {
+        "type": "High Density",
+        "columns": "grid-cols-1 md:grid-cols-4",
+        "gap": "gap-4",
+        "rules": "Dense. Every pixel utilized. Use h-full on children."
+      }
+    },
+    "containers": {
+      "marketing": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+      "dashboard": "w-full px-4 py-4"
+    }
+  },
+  "components": {
+    "buttons": {
+      "style": "Sharp or Pill-shaped. No default rounded-md.",
+      "interaction": "Scale down slightly on click (active:scale-95). Hover brightness boost."
+    },
+    "cards": {
+      "marketing": "Flat, 1px border, no shadow. Hover: Lift + Shadow.",
+      "dashboard": "White bg, 1px border (slate-200), subtle shadow-sm."
+    },
+    "inputs": {
+      "style": "bg-slate-50 border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent."
+    },
+    "navigation": {
+      "marketing": "Floating glassmorphism header (backdrop-blur-md).",
+      "dashboard": "Fixed dark sidebar (Recruiter/Admin) or Top-nav (Job Seeker)."
+    }
+  },
+  "assets": {
+    "images": {
+      "hero_professionals": "https://images.unsplash.com/photo-1758873268631-fa944fc5cad2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwxfHxkaXZlcnNlJTIwcHJvZmVzc2lvbmFscyUyMG1vZGVybiUyMG9mZmljZSUyMGNvbGxhYm9yYXRpb258ZW58MHx8fHwxNzY5MjMzMDI4fDA&ixlib=rb-4.1.0&q=85",
+      "team_collaboration": "https://images.unsplash.com/photo-1758691737387-a89bb8adf768?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwyfHxkaXZlcnNlJTIwcHJvZmVzc2lvbmFscyUyMG1vZGVybiUyMG9mZmljZSUyMGNvbGxhYm9yYXRpb258ZW58MHx8fHwxNzY5MjMzMDI4fDA&ixlib=rb-4.1.0&q=85",
+      "office_environment": "https://images.unsplash.com/photo-1748346918817-0b1b6b2f9bab?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHw0fHxkaXZlcnNlJTIwcHJvZmVzc2lvbmFscyUyMG1vZGVybiUyMG9mZmljZSUyMGNvbGxhYm9yYXRpb258ZW58MHx8fHwxNzY5MjMzMDI4fDA&ixlib=rb-4.1.0&q=85",
+      "headshot_male_1": "https://images.unsplash.com/photo-1651684215020-f7a5b6610f23?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODF8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMHNtaWxpbmd8ZW58MHx8fHwxNzY5MjMzMDMwfDA&ixlib=rb-4.1.0&q=85",
+      "headshot_male_2": "https://images.unsplash.com/photo-1576558656222-ba66febe3dec?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODF8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMHNtaWxpbmd8ZW58MHx8fHwxNzY5MjMzMDMwfDA&ixlib=rb-4.1.0&q=85",
+      "headshot_female_1": "https://images.unsplash.com/photo-1672527838035-90ae2ad2e813?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODF8MHwxfHNlYXJjaHw0fHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMHNtaWxpbmd8ZW58MHx8fHwxNzY5MjMzMDMwfDA&ixlib=rb-4.1.0&q=85",
+      "minimalist_office": "https://images.unsplash.com/photo-1666618207644-4de0226a3f85?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHwzfHxtb2Rlcm4lMjBtaW5pbWFsaXN0JTIwb2ZmaWNlJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzY5MTk5MDQ1fDA&ixlib=rb-4.1.0&q=85"
+    },
+    "icons": "Use 'lucide-react' for all UI icons. Use 'simple-icons' for brand logos if needed."
+  },
+  "motion": {
+    "transitions": "transition-all duration-200 ease-in-out",
+    "hover_effects": "hover:translate-y-[-2px] hover:shadow-lg",
+    "loading": "Use skeleton loaders (Shadcn) instead of spinners where possible.",
+    "rules": [
+      "Respect prefers-reduced-motion.",
+      "Do not use transition: all. Be specific (transition-colors, transition-transform)."
+    ]
+  },
+  "accessibility": {
+    "contrast": "Ensure 4.5:1 contrast ratio for normal text.",
+    "focus": "Visible focus rings on all interactive elements.",
+    "testing": "All interactive elements must have data-testid attributes."
+  },
+  "universal_guidelines": [
+    "Avoid 'AI Slop': No generic centered layouts, no 'Bootstrap' look.",
+    "Dark colors must be solid, not gradients.",
+    "Use glassmorphism with backdrop-blur-md for overlays.",
+    "Do not center align the app container.",
+    "Use 'sonner' for toasts.",
+    "Components must use named exports.",
+    "Pages must use default exports."
+  ],
+  "instructions_to_main_agent": "You are building a 3-panel job platform (Admin, Recruiter, Job Seeker). Use the 'Swiss & High-Contrast' archetype. Prioritize clarity and trust. Use the provided image URLs for placeholders. Follow the component customization rules strictly."
+}
