@@ -67,7 +67,7 @@ function AppRouter() {
         <Route path="my-jobs" element={<MyJobs />} />
         <Route path="applicants/:jobId" element={<Applicants />} />
         <Route path="messages" element={<RecruiterMessages />} />
-        <Route path="credits" element={<PurchaseCredits />} />
+        <Route path="subscription" element={<Subscription />} />
       </Route>
       
       {/* Admin routes */}
