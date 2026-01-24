@@ -77,19 +77,21 @@ export default function PostJob() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (credits < 1) {
-      toast.error('You need at least 1 credit to post a job');
-      navigate('/recruiter/credits');
-      return;
-    }
-
     setPosting(true);
     try {
       await api.post('/jobs', jobData);
       toast.success('Job posted successfully! Awaiting admin approval.');
       navigate('/recruiter/my-jobs');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to post job');
+      const errorMessage = error.response?.data?.detail || 'Failed to post job';
+      toast.error(errorMessage);
+      
+      // If it's a subscription issue, redirect to subscription page
+      if (error.response?.status === 402) {
+        setTimeout(() => {
+          navigate('/recruiter/subscription');
+        }, 2000);
+      }
     } finally {
       setPosting(false);
     }
