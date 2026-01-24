@@ -144,8 +144,9 @@ class Payment(BaseModel):
     payment_id: str
     user_id: str
     amount: int
-    credits_purchased: int
-    stripe_payment_intent_id: str
+    subscription_plan: str
+    razorpay_order_id: str
+    razorpay_payment_id: Optional[str] = None
     status: str
     created_at: datetime
 
