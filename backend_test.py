@@ -231,12 +231,11 @@ class JobSiteAPITester:
             )
             
             # Test payment intent creation
-            self.run_test(
+            payment_response = self.run_test(
                 "Create Payment Intent",
                 "POST",
-                "payments/create-intent",
-                200,
-                data={"credits": 5}
+                "payments/create-intent?credits=5",
+                200
             )
             
             # Test get my jobs
