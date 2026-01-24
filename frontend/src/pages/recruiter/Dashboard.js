@@ -57,29 +57,32 @@ export default function RecruiterDashboard() {
         {/* Stats */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg border border-slate-200">
-            <p className="text-slate-600 mb-2">Available Credits</p>
-            <p className="text-3xl font-bold text-[#4F46E5]">{stats.credits}</p>
-            <Link to="/recruiter/credits">
+            <p className="text-slate-600 mb-2">Current Plan</p>
+            <p className="text-3xl font-bold text-[#4F46E5] capitalize">{stats.subscription_plan}</p>
+            <Link to="/recruiter/subscription">
               <Button className="mt-4 w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-full">
-                Buy More
+                {stats.subscription_status === 'active' ? 'Manage' : 'Subscribe'}
               </Button>
             </Link>
           </div>
           <div className="bg-white p-6 rounded-lg border border-slate-200">
-            <p className="text-slate-600 mb-2">Total Jobs Posted</p>
+            <p className="text-slate-600 mb-2">Subscription Status</p>
+            <p className={`text-2xl font-bold ${stats.subscription_status === 'active' ? 'text-[#10B981]' : 'text-[#F59E0B]'}`}>
+              {stats.subscription_status === 'active' ? 'Active' : 'Inactive'}
+            </p>
+            {stats.subscription_end && stats.subscription_status === 'active' && (
+              <p className="text-xs text-slate-500 mt-2">
+                Valid until: {new Date(stats.subscription_end).toLocaleDateString()}
+              </p>
+            )}
+          </div>
+          <div className="bg-white p-6 rounded-lg border border-slate-200">
+            <p className="text-slate-600 mb-2">Jobs Posted This Month</p>
+            <p className="text-3xl font-bold text-[#0F172A]">{stats.jobs_posted_this_month}</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg border border-slate-200">
+            <p className="text-slate-600 mb-2">Total Jobs</p>
             <p className="text-3xl font-bold text-[#0F172A]">{stats.jobs.length}</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg border border-slate-200">
-            <p className="text-slate-600 mb-2">Active Jobs</p>
-            <p className="text-3xl font-bold text-[#10B981]">
-              {stats.jobs.filter((j) => j.status === 'approved').length}
-            </p>
-          </div>
-          <div className="bg-white p-6 rounded-lg border border-slate-200">
-            <p className="text-slate-600 mb-2">Pending Approval</p>
-            <p className="text-3xl font-bold text-[#F59E0B]">
-              {stats.jobs.filter((j) => j.status === 'pending').length}
-            </p>
           </div>
         </div>
 
