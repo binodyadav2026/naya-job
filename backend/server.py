@@ -261,7 +261,11 @@ async def register(user_data: UserCreate):
             "company_name": "",
             "company_website": None,
             "company_description": None,
-            "credits": 0
+            "subscription_plan": "free",
+            "subscription_status": "inactive",
+            "subscription_start": None,
+            "subscription_end": None,
+            "jobs_posted_this_month": 0
         }
         await db.recruiter_profiles.insert_one(profile_doc)
     
