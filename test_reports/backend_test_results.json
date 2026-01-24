@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-01-24T06:47:47.603664",
+  "timestamp": "2026-01-24T06:49:10.194021",
   "total_tests": 20,
-  "passed_tests": 18,
-  "success_rate": 0.9,
+  "passed_tests": 19,
+  "success_rate": 0.95,
   "results": [
     {
       "test": "User Registration",
@@ -71,13 +71,13 @@
     },
     {
       "test": "Create Job (No Credits)",
-      "success": false,
-      "details": "Status: 200, Error: Unknown error"
+      "success": true,
+      "details": "Status: 402"
     },
     {
       "test": "Create Payment Intent",
       "success": false,
-      "details": "Status: 422, Error: [{'type': 'missing', 'loc': ['query', 'credits'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.12/v/missing'}]"
+      "details": "Status: 520, Error: Payment processing error"
     },
     {
       "test": "Get My Jobs",
