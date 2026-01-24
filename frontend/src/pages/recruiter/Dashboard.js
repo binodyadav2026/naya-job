@@ -16,7 +16,13 @@ const navigation = [
 
 export default function RecruiterDashboard() {
   const { user } = useOutletContext();
-  const [stats, setStats] = useState({ credits: 0, jobs: [], applications: [] });
+  const [stats, setStats] = useState({ 
+    subscription_plan: 'free',
+    subscription_status: 'inactive',
+    subscription_end: null,
+    jobs_posted_this_month: 0,
+    jobs: []
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
