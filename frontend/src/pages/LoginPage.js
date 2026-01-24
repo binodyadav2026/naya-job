@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Briefcase } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
 import api from '../utils/api';
-
-const LOGO_URL = 'https://customer-assets.emergentagent.com/job_jobhub-31/artifacts/dk3wvj8r_naya%20job%20logo.png';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -57,8 +56,9 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
-            <Link to="/" className="inline-flex items-center justify-center mb-6">
-              <img src={LOGO_URL} alt="Naya Job" className="h-12" />
+            <Link to="/" className="inline-flex items-center space-x-2 mb-6">
+              <Briefcase className="h-10 w-10 text-[#4F46E5]" />
+              <span className="text-3xl font-bold text-[#0F172A]">JobConnect</span>
             </Link>
             <h2 className="text-3xl font-bold text-[#0F172A] mb-2">Welcome Back</h2>
             <p className="text-slate-600">Sign in to continue to your account</p>
