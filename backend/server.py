@@ -783,106 +783,204 @@ async def get_job_recommendations(request: Request, session_token: Optional[str]
         matched_jobs.sort(reverse=True, key=lambda x: x[0])
         return [j[1] for j in matched_jobs[:5]]
 
-# ============ PAYMENT ENDPOINTS ============
+# ============ SUBSCRIPTION & PAYMENT ENDPOINTS ============
 
-@api_router.post("/payments/create-intent")
-async def create_payment_intent(credits: int, request: Request, session_token: Optional[str] = Cookie(None)):
-    """Create a Stripe payment intent"""
+@api_router.post("/subscriptions/create-order")
+async def create_subscription_order(plan: str, request: Request, session_token: Optional[str] = Cookie(None)):
+    """Create a Razorpay order for subscription"""
     user = await get_current_recruiter(request, session_token)
     
-    # Each credit costs $10 (in cents)
-    amount = credits * 1000
+    # Define subscription plans (amount in paise)
+    plans = {
+        "basic": {"amount": 99900, "duration": 30, "jobs_limit": 10},  # ₹999/month
+        "premium": {"amount": 249900, "duration": 30, "jobs_limit": 50},  # ₹2499/month
+        "enterprise": {"amount": 499900, "duration": 30, "jobs_limit": 999}  # ₹4999/month
+    }
     
-    # Check if Stripe is properly configured
-    if not stripe.api_key or stripe.api_key == '':
-        # Demo mode - return a mock client secret
-        logger.warning("Stripe not configured - running in demo mode")
+    if plan not in plans:
+        raise HTTPException(status_code=400, detail="Invalid subscription plan")
+    
+    plan_details = plans[plan]
+    
+    # Check if Razorpay is configured
+    if not razorpay_client:
+        # Demo mode - return mock order
+        logger.warning("Razorpay not configured - running in demo mode")
+        order_id = f"order_demo_{uuid.uuid4().hex[:12]}"
         return {
-            "clientSecret": f"demo_secret_{uuid.uuid4().hex}",
-            "amount": amount,
+            "order_id": order_id,
+            "amount": plan_details["amount"],
+            "currency": "INR",
+            "key_id": "demo_key",
             "demo_mode": True
         }
     
     try:
-        intent = stripe.PaymentIntent.create(
-            amount=amount,
-            currency="usd",
-            metadata={"user_id": user.user_id, "credits": credits}
-        )
-        
-        return {"clientSecret": intent.client_secret, "amount": amount, "demo_mode": False}
-    except Exception as e:
-        logger.error(f"Stripe payment intent creation failed: {e}")
-        # Return demo mode as fallback
-        return {
-            "clientSecret": f"demo_secret_{uuid.uuid4().hex}",
-            "amount": amount,
-            "demo_mode": True
+        # Create Razorpay order
+        order_data = {
+            "amount": plan_details["amount"],
+            "currency": "INR",
+            "payment_capture": 1,
+            "notes": {
+                "user_id": user.user_id,
+                "plan": plan
+            }
         }
-
-@api_router.post("/payments/confirm")
-async def confirm_payment(payment_intent_id: str, request: Request, session_token: Optional[str] = Cookie(None)):
-    """Confirm payment and add credits"""
-    user = await get_current_recruiter(request, session_token)
-    
-    # Handle demo mode
-    if payment_intent_id.startswith('demo_'):
-        # Extract credits from intent metadata (default to 1 for demo)
-        credits = 1
         
-        # Add credits to recruiter
-        await db.recruiter_profiles.update_one(
-            {"user_id": user.user_id},
-            {"$inc": {"credits": credits}}
-        )
+        order = razorpay_client.order.create(data=order_data)
         
-        # Save payment record
+        # Save order in database
         payment_doc = {
             "payment_id": f"pay_{uuid.uuid4().hex[:12]}",
             "user_id": user.user_id,
-            "amount": credits * 1000,
-            "credits_purchased": credits,
-            "stripe_payment_intent_id": payment_intent_id,
-            "status": "succeeded_demo",
+            "amount": plan_details["amount"],
+            "subscription_plan": plan,
+            "razorpay_order_id": order["id"],
+            "razorpay_payment_id": None,
+            "status": "created",
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.payments.insert_one(payment_doc)
         
-        return {"message": "Payment successful (demo mode)", "credits_added": credits}
+        return {
+            "order_id": order["id"],
+            "amount": order["amount"],
+            "currency": order["currency"],
+            "key_id": razorpay_key_id,
+            "demo_mode": False
+        }
+    except Exception as e:
+        logger.error(f"Razorpay order creation failed: {e}")
+        # Fallback to demo mode
+        order_id = f"order_demo_{uuid.uuid4().hex[:12]}"
+        return {
+            "order_id": order_id,
+            "amount": plan_details["amount"],
+            "currency": "INR",
+            "key_id": "demo_key",
+            "demo_mode": True
+        }
+
+@api_router.post("/subscriptions/verify-payment")
+async def verify_subscription_payment(
+    razorpay_order_id: str,
+    razorpay_payment_id: str,
+    razorpay_signature: str,
+    request: Request,
+    session_token: Optional[str] = Cookie(None)
+):
+    """Verify Razorpay payment and activate subscription"""
+    user = await get_current_recruiter(request, session_token)
+    
+    # Handle demo mode
+    if razorpay_order_id.startswith('order_demo_'):
+        # Find payment record
+        payment = await db.payments.find_one({"razorpay_order_id": razorpay_order_id})
+        if not payment:
+            # Create demo payment record
+            payment = {
+                "user_id": user.user_id,
+                "subscription_plan": "basic",
+                "amount": 99900
+            }
+        
+        plan = payment.get("subscription_plan", "basic")
+        
+        # Activate subscription
+        subscription_start = datetime.now(timezone.utc)
+        subscription_end = subscription_start + timedelta(days=30)
+        
+        await db.recruiter_profiles.update_one(
+            {"user_id": user.user_id},
+            {
+                "$set": {
+                    "subscription_plan": plan,
+                    "subscription_status": "active",
+                    "subscription_start": subscription_start.isoformat(),
+                    "subscription_end": subscription_end.isoformat(),
+                    "jobs_posted_this_month": 0
+                }
+            }
+        )
+        
+        # Update payment status
+        await db.payments.update_one(
+            {"razorpay_order_id": razorpay_order_id},
+            {
+                "$set": {
+                    "status": "success_demo",
+                    "razorpay_payment_id": razorpay_payment_id
+                }
+            }
+        )
+        
+        return {
+            "message": "Subscription activated successfully (demo mode)",
+            "plan": plan,
+            "valid_until": subscription_end.isoformat()
+        }
+    
+    # Real Razorpay verification
+    if not razorpay_client:
+        raise HTTPException(status_code=500, detail="Payment gateway not configured")
     
     try:
-        intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+        # Verify signature
+        params_dict = {
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': razorpay_payment_id,
+            'razorpay_signature': razorpay_signature
+        }
         
-        if intent.status == "succeeded":
-            credits = int(intent.metadata.get("credits", 0))
-            
-            # Add credits to recruiter
-            await db.recruiter_profiles.update_one(
-                {"user_id": user.user_id},
-                {"$inc": {"credits": credits}}
-            )
-            
-            # Save payment record
-            payment_doc = {
-                "payment_id": f"pay_{uuid.uuid4().hex[:12]}",
-                "user_id": user.user_id,
-                "amount": intent.amount,
-                "credits_purchased": credits,
-                "stripe_payment_intent_id": payment_intent_id,
-                "status": "succeeded",
-                "created_at": datetime.now(timezone.utc).isoformat()
+        razorpay_client.utility.verify_payment_signature(params_dict)
+        
+        # Find payment record
+        payment = await db.payments.find_one({"razorpay_order_id": razorpay_order_id})
+        if not payment:
+            raise HTTPException(status_code=404, detail="Payment record not found")
+        
+        plan = payment["subscription_plan"]
+        
+        # Activate subscription
+        subscription_start = datetime.now(timezone.utc)
+        subscription_end = subscription_start + timedelta(days=30)
+        
+        await db.recruiter_profiles.update_one(
+            {"user_id": user.user_id},
+            {
+                "$set": {
+                    "subscription_plan": plan,
+                    "subscription_status": "active",
+                    "subscription_start": subscription_start.isoformat(),
+                    "subscription_end": subscription_end.isoformat(),
+                    "jobs_posted_this_month": 0
+                }
             }
-            await db.payments.insert_one(payment_doc)
-            
-            return {"message": "Payment successful", "credits_added": credits}
-        else:
-            raise HTTPException(status_code=400, detail="Payment not successful")
-    except stripe.error.StripeError as e:
-        logger.error(f"Stripe error: {e}")
-        raise HTTPException(status_code=500, detail="Payment confirmation error")
+        )
+        
+        # Update payment status
+        await db.payments.update_one(
+            {"razorpay_order_id": razorpay_order_id},
+            {
+                "$set": {
+                    "status": "success",
+                    "razorpay_payment_id": razorpay_payment_id
+                }
+            }
+        )
+        
+        return {
+            "message": "Subscription activated successfully",
+            "plan": plan,
+            "valid_until": subscription_end.isoformat()
+        }
+        
+    except razorpay.errors.SignatureVerificationError as e:
+        logger.error(f"Payment signature verification failed: {e}")
+        raise HTTPException(status_code=400, detail="Payment verification failed")
     except Exception as e:
-        logger.error(f"Payment confirmation failed: {e}")
-        raise HTTPException(status_code=500, detail="Payment confirmation error")
+        logger.error(f"Payment verification error: {e}")
+        raise HTTPException(status_code=500, detail="Payment verification error")
 
 # ============ ADMIN ENDPOINTS ============
 
