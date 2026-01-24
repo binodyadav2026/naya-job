@@ -171,7 +171,7 @@ export default function JobSeekerProfile() {
                 id="preferred_salary_min"
                 name="preferred_salary_min"
                 type="number"
-                value={profile.preferred_salary_min}
+                value={profile.preferred_salary_min || ''}
                 onChange={handleChange}
                 className="mt-1"
                 placeholder="e.g., 50000"
