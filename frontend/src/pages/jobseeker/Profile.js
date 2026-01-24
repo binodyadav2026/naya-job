@@ -112,7 +112,7 @@ export default function JobSeekerProfile() {
                 id="experience_years"
                 name="experience_years"
                 type="number"
-                value={profile.experience_years}
+                value={profile.experience_years || 0}
                 onChange={handleChange}
                 className="mt-1"
               />
