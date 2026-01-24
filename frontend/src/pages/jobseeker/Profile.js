@@ -124,7 +124,7 @@ export default function JobSeekerProfile() {
             <textarea
               id="bio"
               name="bio"
-              value={profile.bio}
+              value={profile.bio || ''}
               onChange={handleChange}
               rows={4}
               className="mt-1 w-full rounded-md border border-slate-200 p-2 focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
