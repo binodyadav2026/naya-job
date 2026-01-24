@@ -1,0 +1,108 @@
+{
+  "timestamp": "2026-01-24T06:47:47.603664",
+  "total_tests": 20,
+  "passed_tests": 18,
+  "success_rate": 0.9,
+  "results": [
+    {
+      "test": "User Registration",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "User Login",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Get Current User",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Get Job Seeker Profile",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Update Job Seeker Profile",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Get AI Job Recommendations",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Get Jobs for Application",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Get My Applications",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Get All Jobs",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Search Jobs by Location",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Search Jobs by Skills",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Recruiter Registration",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Update Recruiter Profile",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Create Job (No Credits)",
+      "success": false,
+      "details": "Status: 200, Error: Unknown error"
+    },
+    {
+      "test": "Create Payment Intent",
+      "success": false,
+      "details": "Status: 422, Error: [{'type': 'missing', 'loc': ['query', 'credits'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.12/v/missing'}]"
+    },
+    {
+      "test": "Get My Jobs",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Admin Registration (May Fail)",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Get Analytics",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Get All Users",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Get All Jobs (Admin)",
+      "success": true,
+      "details": "Status: 200"
+    }
+  ]
+}
