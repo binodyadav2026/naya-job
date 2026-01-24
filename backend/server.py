@@ -630,14 +630,20 @@ async def get_job_applications(job_id: str, request: Request, session_token: Opt
     
     applications = await db.applications.find({"job_id": job_id}, {"_id": 0}).sort("applied_at", -1).to_list(100)
     
-    # Enrich with job seeker details
+    # Collect all unique job seeker IDs
+    seeker_ids = list(set(app["job_seeker_id"] for app in applications))
+    
+    # Fetch all users and profiles in bulk
+    users_cursor = db.users.find({"user_id": {"$in": seeker_ids}}, {"_id": 0, "password_hash": 0})
+    users_dict = {user["user_id"]: user async for user in users_cursor}
+    
+    profiles_cursor = db.job_seeker_profiles.find({"user_id": {"$in": seeker_ids}}, {"_id": 0})
+    profiles_dict = {profile["user_id"]: profile async for profile in profiles_cursor}
+    
+    # Enrich applications with job seeker details
     for app in applications:
-        seeker = await db.users.find_one({"user_id": app["job_seeker_id"]}, {"_id": 0, "password_hash": 0})
-        profile = await db.job_seeker_profiles.find_one({"user_id": app["job_seeker_id"]}, {"_id": 0})
-        if seeker:
-            app["job_seeker"] = seeker
-        if profile:
-            app["profile"] = profile
+        app["job_seeker"] = users_dict.get(app["job_seeker_id"])
+        app["profile"] = profiles_dict.get(app["job_seeker_id"])
     
     return applications
 
