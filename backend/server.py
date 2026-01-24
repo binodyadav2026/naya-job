@@ -730,11 +730,17 @@ async def get_conversations(request: Request, session_token: Optional[str] = Coo
     
     conversations = await db.messages.aggregate(pipeline).to_list(100)
     
-    # Enrich with user details
+    # Collect all unique user IDs
+    user_ids = [conv["_id"] for conv in conversations]
+    
+    # Fetch all users in bulk
+    users_cursor = db.users.find({"user_id": {"$in": user_ids}}, {"_id": 0, "password_hash": 0})
+    users_dict = {user["user_id"]: user async for user in users_cursor}
+    
+    # Enrich conversations with user details
     result = []
     for conv in conversations:
-        other_user_id = conv["_id"]
-        other_user = await db.users.find_one({"user_id": other_user_id}, {"_id": 0, "password_hash": 0})
+        other_user = users_dict.get(conv["_id"])
         if other_user:
             result.append({
                 "user": other_user,
