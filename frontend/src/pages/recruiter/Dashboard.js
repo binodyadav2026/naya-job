@@ -11,7 +11,7 @@ const navigation = [
   { name: 'Post Job', path: '/recruiter/post-job', icon: Briefcase },
   { name: 'My Jobs', path: '/recruiter/my-jobs', icon: FileText },
   { name: 'Messages', path: '/recruiter/messages', icon: MessageSquare },
-  { name: 'Buy Credits', path: '/recruiter/credits', icon: CreditCard },
+  { name: 'Subscription', path: '/recruiter/subscription', icon: CreditCard },
 ];
 
 export default function RecruiterDashboard() {
