@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
-import { Briefcase, Users, TrendingUp, MessageSquare, Search, Zap } from 'lucide-react';
+import { Users, TrendingUp, MessageSquare, Search, Zap } from 'lucide-react';
 import { Button } from '../components/ui/button';
+
+const LOGO_URL = 'https://customer-assets.emergentagent.com/job_jobhub-31/artifacts/dk3wvj8r_naya%20job%20logo.png';
 
 export default function LandingPage() {
   return (
@@ -9,10 +11,9 @@ export default function LandingPage() {
       <header className="fixed top-0 left-0 right-0 z-50 glassmorphism border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
-              <Briefcase className="h-8 w-8 text-[#4F46E5]" />
-              <span className="text-2xl font-bold tracking-tight text-[#0F172A]">JobConnect</span>
-            </div>
+            <Link to="/" className="flex items-center">
+              <img src={LOGO_URL} alt="Naya Job" className="h-10" />
+            </Link>
             <nav className="hidden md:flex space-x-8">
               <a href="#features" className="text-slate-600 hover:text-[#4F46E5] transition-colors font-medium">
                 Features
@@ -126,7 +127,7 @@ export default function LandingPage() {
             
             <div className="bg-white p-8 rounded-lg border border-slate-200 card-hover" data-testid="feature-analytics">
               <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-6">
-                <Briefcase className="h-6 w-6 text-[#4F46E5]" />
+                <TrendingUp className="h-6 w-6 text-[#4F46E5]" />
               </div>
               <h3 className="text-xl font-bold mb-3 text-[#0F172A]">Admin Analytics</h3>
               <p className="text-slate-600">Comprehensive analytics and moderation tools to manage the platform effectively.</p>
@@ -176,7 +177,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-bold mb-6 tracking-tight">Ready to Get Started?</h2>
           <p className="text-xl text-slate-300 mb-8">
-            Join thousands of job seekers and recruiters using JobConnect to build their careers.
+            Join thousands of job seekers and recruiters using Naya Job to build their careers.
           </p>
           <Link to="/register">
             <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-full px-10 py-6 text-lg font-semibold" data-testid="cta-register-btn">
@@ -191,10 +192,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <Briefcase className="h-6 w-6 text-[#4F46E5]" />
-                <span className="text-xl font-bold text-[#0F172A]">JobConnect</span>
-              </div>
+              <img src={LOGO_URL} alt="Naya Job" className="h-8 mb-4" />
               <p className="text-slate-600">Connecting talent with opportunity through intelligent matching.</p>
             </div>
             <div>
@@ -220,7 +218,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-slate-200 text-center text-slate-600">
-            <p>&copy; 2025 JobConnect. All rights reserved.</p>
+            <p>&copy; 2025 Naya Job. All rights reserved.</p>
           </div>
         </div>
       </footer>
