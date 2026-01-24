@@ -788,6 +788,31 @@ async def confirm_payment(payment_intent_id: str, request: Request, session_toke
     """Confirm payment and add credits"""
     user = await get_current_recruiter(request, session_token)
     
+    # Handle demo mode
+    if payment_intent_id.startswith('demo_'):
+        # Extract credits from intent metadata (default to 1 for demo)
+        credits = 1
+        
+        # Add credits to recruiter
+        await db.recruiter_profiles.update_one(
+            {"user_id": user.user_id},
+            {"$inc": {"credits": credits}}
+        )
+        
+        # Save payment record
+        payment_doc = {
+            "payment_id": f"pay_{uuid.uuid4().hex[:12]}",
+            "user_id": user.user_id,
+            "amount": credits * 1000,
+            "credits_purchased": credits,
+            "stripe_payment_intent_id": payment_intent_id,
+            "status": "succeeded_demo",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.payments.insert_one(payment_doc)
+        
+        return {"message": "Payment successful (demo mode)", "credits_added": credits}
+    
     try:
         intent = stripe.PaymentIntent.retrieve(payment_intent_id)
         
@@ -815,6 +840,9 @@ async def confirm_payment(payment_intent_id: str, request: Request, session_toke
             return {"message": "Payment successful", "credits_added": credits}
         else:
             raise HTTPException(status_code=400, detail="Payment not successful")
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error: {e}")
+        raise HTTPException(status_code=500, detail="Payment confirmation error")
     except Exception as e:
         logger.error(f"Payment confirmation failed: {e}")
         raise HTTPException(status_code=500, detail="Payment confirmation error")
