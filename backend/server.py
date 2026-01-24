@@ -462,7 +462,7 @@ async def create_job(job_data: JobCreate, request: Request, session_token: Optio
     user = await get_current_recruiter(request, session_token)
     
     # Check recruiter subscription
-    profile = await db.recruiter_profiles.find_one({" user_id": user.user_id}, {"_id": 0})
+    profile = await db.recruiter_profiles.find_one({"user_id": user.user_id}, {"_id": 0})
     if not profile:
         raise HTTPException(status_code=404, detail="Recruiter profile not found")
     
