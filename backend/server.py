@@ -79,7 +79,11 @@ class RecruiterProfile(BaseModel):
     company_name: str
     company_website: Optional[str] = None
     company_description: Optional[str] = None
-    credits: int = 0  # Credits for posting jobs
+    subscription_plan: str = "free"  # free, basic, premium, enterprise
+    subscription_status: str = "inactive"  # active, inactive, expired
+    subscription_start: Optional[datetime] = None
+    subscription_end: Optional[datetime] = None
+    jobs_posted_this_month: int = 0
 
 class Job(BaseModel):
     job_id: str
