@@ -23,7 +23,7 @@ import PostJob from './pages/recruiter/PostJob';
 import MyJobs from './pages/recruiter/MyJobs';
 import Applicants from './pages/recruiter/Applicants';
 import RecruiterMessages from './pages/recruiter/Messages';
-import PurchaseCredits from './pages/recruiter/PurchaseCredits';
+import Subscription from './pages/recruiter/Subscription';
 
 // Admin pages
 import AdminDashboard from './pages/admin/Dashboard';
