@@ -986,10 +986,10 @@ async def verify_subscription_payment(
 # ============ ADMIN ENDPOINTS ============
 
 @api_router.get("/admin/users")
-async def get_all_users(request: Request, session_token: Optional[str] = Cookie(None)):
+async def get_all_users(skip: int = 0, limit: int = 100, request: Request = None, session_token: Optional[str] = Cookie(None)):
     """Get all users (admin only)"""
     await get_current_admin(request, session_token)
-    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(1000)
+    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).skip(skip).limit(limit).to_list(limit)
     return users
 
 @api_router.delete("/admin/users/{user_id}")
