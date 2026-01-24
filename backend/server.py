@@ -23,8 +23,10 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Stripe configuration
-stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', '')
+# Razorpay configuration
+razorpay_key_id = os.environ.get('RAZORPAY_KEY_ID', '')
+razorpay_key_secret = os.environ.get('RAZORPAY_KEY_SECRET', '')
+razorpay_client = razorpay.Client(auth=(razorpay_key_id, razorpay_key_secret)) if razorpay_key_id and razorpay_key_secret else None
 
 # JWT configuration
 JWT_SECRET = os.environ.get('JWT_SECRET_KEY', 'your-super-secret-jwt-key-change-in-production')
