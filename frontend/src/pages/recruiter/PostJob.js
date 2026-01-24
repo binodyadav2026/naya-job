@@ -46,8 +46,13 @@ export default function PostJob() {
   const fetchProfile = async () => {
     try {
       const response = await api.get(`/profile/recruiter/${user.user_id}`);
-      setCredits(response.data.credits);
-      setJobData({ ...jobData, company_name: response.data.company_name });
+      setProfile({
+        subscription_plan: response.data.subscription_plan || 'free',
+        subscription_status: response.data.subscription_status || 'inactive',
+        jobs_posted_this_month: response.data.jobs_posted_this_month || 0,
+        company_name: response.data.company_name || ''
+      });
+      setJobData({ ...jobData, company_name: response.data.company_name || '' });
     } catch (error) {
       console.error('Error fetching profile:', error);
     }
