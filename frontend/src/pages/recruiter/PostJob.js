@@ -103,8 +103,11 @@ export default function PostJob() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-[#0F172A]">Post a New Job</h1>
           <div className="text-right">
-            <p className="text-sm text-slate-600">Available Credits</p>
-            <p className="text-2xl font-bold text-[#4F46E5]">{credits}</p>
+            <p className="text-sm text-slate-600">Current Plan</p>
+            <p className="text-xl font-bold text-[#4F46E5] capitalize">{profile.subscription_plan}</p>
+            <p className="text-xs text-slate-500">
+              {profile.jobs_posted_this_month} jobs posted this month
+            </p>
           </div>
         </div>
 
