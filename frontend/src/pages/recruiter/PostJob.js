@@ -20,7 +20,11 @@ const navigation = [
 export default function PostJob() {
   const { user } = useOutletContext();
   const navigate = useNavigate();
-  const [credits, setCredits] = useState(0);
+  const [profile, setProfile] = useState({
+    subscription_plan: 'free',
+    subscription_status: 'inactive',
+    jobs_posted_this_month: 0
+  });
   const [jobData, setJobData] = useState({
     title: '',
     description: '',
