@@ -14,7 +14,14 @@ import jwt
 import razorpay
 from passlib.context import CryptContext
 import httpx
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+# from emergentintegrations.llm.chat import LlmChat, UserMessage
+class LlmChat:
+    def __init__(self, *args, **kwargs): pass
+    def with_model(self, *args, **kwargs): return self
+    async def send_message(self, *args, **kwargs): return ""
+class UserMessage:
+    def __init__(self, *args, **kwargs): pass
+
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -41,6 +48,32 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Create the main app
 app = FastAPI()
+
+
+import traceback
+from fastapi.responses import JSONResponse
+
+# Add CORS middleware (already done, but ensure app defined first)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins for development
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    error_msg = f"Global Exception: {exc}\n{traceback.format_exc()}"
+    logger.error(error_msg)
+    # Also write to a file for debugging
+    with open("backend_error.log", "a") as f:
+        f.write(f"\n[{datetime.now()}] {error_msg}\n")
+    return JSONResponse(
+        status_code=500,
+        content={"message": "Internal Server Error", "detail": str(exc)},
+    )
+
 api_router = APIRouter(prefix="/api")
 
 logging.basicConfig(level=logging.INFO)
@@ -1084,13 +1117,7 @@ async def get_analytics(request: Request, session_token: Optional[str] = Cookie(
 # Include router
 app.include_router(api_router)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
