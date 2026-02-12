@@ -540,9 +540,9 @@ async def create_job(job_data: JobCreate, request: Request, session_token: Optio
         "job_id": job_id,
         "recruiter_id": user.user_id,
         **job_data.model_dump(),
-        "status": "pending",
+        "status": "approved",
         "posted_at": datetime.now(timezone.utc).isoformat(),
-        "approved_at": None
+        "approved_at": datetime.now(timezone.utc).isoformat()
     }
     
     await db.jobs.insert_one(job_doc)

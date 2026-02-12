@@ -75,7 +75,9 @@ export default function MyJobs() {
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-xl font-bold text-[#0F172A] mb-2">{job.title}</h3>
+                    <Link to={`/recruiter/jobs/${job.job_id}`} className="block group">
+                      <h3 className="text-xl font-bold text-[#0F172A] mb-2 group-hover:text-[#4F46E5] transition-colors">{job.title}</h3>
+                    </Link>
                     <p className="text-slate-600">{job.location} • {job.job_type.replace('_', ' ')}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(job.status)}`}>
