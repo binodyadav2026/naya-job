@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '../components/ui/dialog';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
+import { Input } from '../components/ui/input';
 import api from '../utils/api';
 import { toast } from 'sonner';
 
@@ -16,6 +17,7 @@ export default function PublicJobDetail() {
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
   const [coverLetter, setCoverLetter] = useState('');
+  const [resume, setResume] = useState(null);
   const [openApplyDialog, setOpenApplyDialog] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
 
@@ -31,7 +33,6 @@ export default function PublicJobDetail() {
           setJob(jobRes.value.data);
         } else {
           toast.error("Job not found");
-          // navigate('/jobs'); // Optional: redirect
         }
 
         if (userRes.status === 'fulfilled') {
@@ -54,7 +55,6 @@ export default function PublicJobDetail() {
   const checkApplicationStatus = async (id) => {
     try {
       const res = await api.get('/applications/my-applications');
-      // This endpoint returns all applications, might be heavy but simple for now
       const applied = res.data.some(app => app.job_id === id);
       setHasApplied(applied);
     } catch (error) {
@@ -63,20 +63,24 @@ export default function PublicJobDetail() {
   };
 
   const handleApply = async () => {
-    if (!coverLetter.trim()) {
-      toast.error('Please write a brief cover letter');
-      return;
-    }
-
     setApplying(true);
     try {
-      await api.post('/applications', {
-        job_id: job.job_id,
-        cover_letter: coverLetter
+      const formData = new FormData();
+      formData.append('job_id', job.job_id);
+      if (coverLetter) formData.append('cover_letter', coverLetter);
+      if (resume) formData.append('resume', resume);
+
+      await api.post('/applications', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
+
       toast.success('Application submitted successfully!');
       setHasApplied(true);
       setOpenApplyDialog(false);
+      setCoverLetter('');
+      setResume(null);
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to apply');
     } finally {
@@ -194,6 +198,16 @@ export default function PublicJobDetail() {
                             rows={8}
                             value={coverLetter}
                             onChange={(e) => setCoverLetter(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="resume">Resume / CV</Label>
+                          <Input
+                            id="resume"
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            onChange={(e) => setResume(e.target.files[0])}
+                            className="cursor-pointer"
                           />
                         </div>
                       </div>

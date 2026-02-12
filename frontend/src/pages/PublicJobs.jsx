@@ -112,7 +112,7 @@ export default function PublicJobs() {
             {filteredJobs.map((job) => (
               <div
                 key={job.job_id}
-                className="bg-white p-6 rounded-lg border border-slate-200 card-hover"
+                className="bg-white p-6 rounded-lg border border-slate-200"
                 data-testid={`job-card-${job.job_id}`}
               >
                 <div className="flex justify-between items-start">

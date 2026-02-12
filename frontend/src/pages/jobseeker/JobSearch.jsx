@@ -25,6 +25,7 @@ export default function JobSearch() {
   const [selectedJob, setSelectedJob] = useState(null);
   const [showApplyDialog, setShowApplyDialog] = useState(false);
   const [coverLetter, setCoverLetter] = useState('');
+  const [resume, setResume] = useState(null);
   const [applying, setApplying] = useState(false);
 
   useEffect(() => {
@@ -52,18 +53,28 @@ export default function JobSearch() {
   const handleApply = (job) => {
     setSelectedJob(job);
     setShowApplyDialog(true);
+    setCoverLetter('');
+    setResume(null);
   };
 
   const submitApplication = async () => {
     setApplying(true);
     try {
-      await api.post('/applications', {
-        job_id: selectedJob.job_id,
-        cover_letter: coverLetter,
+      const formData = new FormData();
+      formData.append('job_id', selectedJob.job_id);
+      if (coverLetter) formData.append('cover_letter', coverLetter);
+      if (resume) formData.append('resume', resume);
+
+      await api.post('/applications', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
+
       toast.success('Application submitted successfully!');
       setShowApplyDialog(false);
       setCoverLetter('');
+      setResume(null);
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to submit application');
     } finally {
@@ -98,7 +109,7 @@ export default function JobSearch() {
             {filteredJobs.map((job) => (
               <div
                 key={job.job_id}
-                className="bg-white p-6 rounded-lg border border-slate-200 card-hover"
+                className="bg-white p-6 rounded-lg border border-slate-200"
                 data-testid={`job-card-${job.job_id}`}
               >
                 <div className="flex-1">
@@ -176,6 +187,19 @@ export default function JobSearch() {
                   className="mt-1 w-full rounded-md border border-slate-200 p-2 focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
                   placeholder="Tell the employer why you're a great fit for this role..."
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="resume">Resume / CV</Label>
+                <div className="mt-1 flex items-center gap-4">
+                  <Input
+                    id="resume"
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={(e) => setResume(e.target.files[0])}
+                    className="cursor-pointer"
+                  />
+                </div>
               </div>
             </div>
             <DialogFooter>
