@@ -117,9 +117,11 @@ export default function PublicJobs() {
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold text-[#0F172A] mb-2">{job.title}</h3>
+                    <Link to={`/jobs/${job.job_id}`} className="block group">
+                      <h3 className="text-xl font-bold text-[#0F172A] mb-2 group-hover:text-[#4F46E5] transition-colors">{job.title}</h3>
+                    </Link>
                     <p className="text-[#4F46E5] font-semibold mb-3">{job.company_name}</p>
-                    
+
                     <div className="flex flex-wrap gap-4 text-slate-600 mb-4">
                       <div className="flex items-center gap-1">
                         <MapPin className="h-4 w-4" />
@@ -155,9 +157,9 @@ export default function PublicJobs() {
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-slate-200">
-                  <Link to="/register">
+                  <Link to={`/jobs/${job.job_id}`}>
                     <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-full font-semibold">
-                      Apply Now
+                      View Details & Apply
                     </Button>
                   </Link>
                 </div>
