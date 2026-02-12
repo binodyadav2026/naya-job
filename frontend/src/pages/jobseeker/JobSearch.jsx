@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, Link } from 'react-router-dom';
 import { Home, User, Search, FileText, MessageSquare, MapPin, DollarSign, Clock } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { Button } from '../../components/ui/button';
@@ -101,48 +101,53 @@ export default function JobSearch() {
                 className="bg-white p-6 rounded-lg border border-slate-200 card-hover"
                 data-testid={`job-card-${job.job_id}`}
               >
-                <h3 className="text-xl font-bold text-[#0F172A] mb-2">{job.title}</h3>
-                <p className="text-[#4F46E5] font-semibold mb-3">{job.company_name}</p>
+                <div className="flex-1">
+                  <Link to={`/jobseeker/jobs/${job.job_id}`} className="block group">
+                    <h3 className="text-xl font-bold text-[#0F172A] mb-2 group-hover:text-[#4F46E5] transition-colors">{job.title}</h3>
+                  </Link>
+                  <p className="text-[#4F46E5] font-semibold mb-3">{job.company_name}</p>
 
-                <div className="flex flex-wrap gap-4 text-slate-600 mb-4">
-                  <div className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    <span>{job.location}</span>
-                  </div>
-                  {job.salary_min && (
+                  <div className="flex flex-wrap gap-4 text-slate-600 mb-4">
                     <div className="flex items-center gap-1">
-                      <DollarSign className="h-4 w-4" />
-                      <span>
-                        ${job.salary_min.toLocaleString()} - ${job.salary_max?.toLocaleString()}
-                      </span>
+                      <MapPin className="h-4 w-4" />
+                      <span>{job.location}</span>
                     </div>
-                  )}
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    <span className="capitalize">{job.job_type.replace('_', ' ')}</span>
+                    {job.salary_min && (
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="h-4 w-4" />
+                        <span>
+                          ${job.salary_min.toLocaleString()} - ${job.salary_max?.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      <span className="capitalize">{job.job_type.replace('_', ' ')}</span>
+                    </div>
                   </div>
-                </div>
 
-                <p className="text-slate-600 mb-4">{job.description}</p>
+                  <p className="text-slate-600 mb-4 line-clamp-2">{job.description}</p>
 
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {job.required_skills.map((skill, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm font-medium"
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {job.required_skills.slice(0, 5).map((skill, idx) => (
+                      <span
+                        key={idx}
+                        className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm font-medium"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+
+                  <Link to={`/jobseeker/jobs/${job.job_id}`}>
+                    <Button
+                      className="bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-full font-semibold"
+                      data-testid={`view-btn-${job.job_id}`}
                     >
-                      {skill}
-                    </span>
-                  ))}
+                      View Details & Apply
+                    </Button>
+                  </Link>
                 </div>
-
-                <Button
-                  onClick={() => handleApply(job)}
-                  className="bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-full font-semibold"
-                  data-testid={`apply-btn-${job.job_id}`}
-                >
-                  Apply Now
-                </Button>
               </div>
             ))}
 
