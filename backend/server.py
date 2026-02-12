@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, UploadFile, File, Cookie, Response, Request
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, UploadFile, File, Cookie, Response, Request, Form
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -48,6 +48,12 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Create the main app
 app = FastAPI()
+
+from fastapi.staticfiles import StaticFiles
+# Mount static files
+static_dir = ROOT_DIR / "static"
+static_dir.mkdir(exist_ok=True)
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 
 import traceback
@@ -592,41 +598,90 @@ async def delete_job(job_id: str, request: Request, session_token: Optional[str]
 # ============ APPLICATION ENDPOINTS ============
 
 @api_router.post("/applications")
-async def apply_to_job(application_data: ApplicationCreate, request: Request, session_token: Optional[str] = Cookie(None)):
-    """Apply to a job"""
+async def apply_to_job(
+    job_id: str = Form(...),
+    cover_letter: Optional[str] = Form(None),
+    resume: Optional[UploadFile] = File(None),
+    request: Request = None,
+    session_token: Optional[str] = Cookie(None)
+):
+    """Apply to a job with optional resume upload"""
     user = await get_current_user(request, session_token)
     if user.role != "job_seeker":
         raise HTTPException(status_code=403, detail="Only job seekers can apply")
     
     # Check if job exists
-    job = await db.jobs.find_one({"job_id": application_data.job_id}, {"_id": 0})
+    job = await db.jobs.find_one({"job_id": job_id}, {"_id": 0})
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     
     # Check if already applied
     existing = await db.applications.find_one({
-        "job_id": application_data.job_id,
+        "job_id": job_id,
         "job_seeker_id": user.user_id
     })
     if existing:
         raise HTTPException(status_code=400, detail="Already applied to this job")
     
+    # Handle Resume Upload
+    resume_url = None
+    if resume:
+        # Ensure static/resumes directory exists
+        upload_dir = ROOT_DIR / "static" / "resumes"
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        
+        file_ext = os.path.splitext(resume.filename)[1]
+        filename = f"{uuid.uuid4().hex[:12]}{file_ext}"
+        file_path = upload_dir / filename
+        
+        with open(file_path, "wb") as f:
+            content = await resume.read()
+            f.write(content)
+            
+        # Construct URL (assuming server runs on localhost:8001)
+        # In prod, this should be CDN or S3 URL
+        resume_url = f"http://localhost:8001/static/resumes/{filename}"
+
     # Create application
     application_id = f"app_{uuid.uuid4().hex[:12]}"
     application_doc = {
         "application_id": application_id,
-        "job_id": application_data.job_id,
+        "job_id": job_id,
         "job_seeker_id": user.user_id,
         "recruiter_id": job["recruiter_id"],
         "status": "pending",
-        "cover_letter": application_data.cover_letter,
+        "cover_letter": cover_letter,
+        "resume_url": resume_url,
         "applied_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
     
     await db.applications.insert_one(application_doc)
-    application_doc.pop("_id", None)
     
+    # Sync to Placfy (Fire and Forget)
+    try:
+        async with httpx.AsyncClient() as client:
+            webhook_url = "http://localhost:8000/api/v1/jobs/webhook/application/"
+            payload = {
+                "naya_application_id": application_id,
+                "job_id": job_id,
+                "candidate_name": user.name,
+                "candidate_email": user.email,
+                "cover_letter": cover_letter or "",
+                "resume_url": resume_url or "",
+                "applied_at": application_doc["applied_at"]
+            }
+            # We don't await response to avoid blocking, or we catch errors
+            # Actually better to await to log errors
+            r = await client.post(webhook_url, json=payload, timeout=5.0)
+            if r.status_code != 201:
+                logger.error(f"Failed to sync application to Placfy: {r.text}")
+            else:
+                logger.info(f"Successfully synced application {application_id} to Placfy")
+    except Exception as e:
+        logger.error(f"Error syncing application to Placfy: {e}")
+
+    application_doc.pop("_id", None)
     return application_doc
 
 @api_router.get("/applications/my-applications")
