@@ -16,11 +16,12 @@ const navigation = [
 
 export default function RecruiterDashboard() {
   const { user } = useOutletContext();
-  const [stats, setStats] = useState({ 
+  const [stats, setStats] = useState({
     subscription_plan: 'free',
     subscription_status: 'inactive',
     subscription_end: null,
     jobs_posted_this_month: 0,
+    custom_job_limit: null,
     jobs: []
   });
   const [loading, setLoading] = useState(true);
@@ -40,6 +41,7 @@ export default function RecruiterDashboard() {
         subscription_status: profileRes.data.subscription_status || 'inactive',
         subscription_end: profileRes.data.subscription_end,
         jobs_posted_this_month: profileRes.data.jobs_posted_this_month || 0,
+        custom_job_limit: profileRes.data.custom_job_limit,
         jobs: jobsRes.data,
       });
     } catch (error) {
@@ -78,7 +80,19 @@ export default function RecruiterDashboard() {
           </div>
           <div className="bg-white p-6 rounded-lg border border-slate-200">
             <p className="text-slate-600 mb-2">Jobs Posted This Month</p>
-            <p className="text-3xl font-bold text-[#0F172A]">{stats.jobs_posted_this_month}</p>
+            <p className="text-3xl font-bold text-[#0F172A]">
+              {stats.jobs_posted_this_month}
+              <span className="text-slate-400 text-2xl mx-1">/</span>
+              <span className="text-slate-500 text-xl">
+                {stats.custom_job_limit || (
+                  stats.subscription_plan === 'free' ? 1
+                    : stats.subscription_plan === 'basic' ? 10
+                      : stats.subscription_plan === 'premium' ? 50
+                        : stats.subscription_plan === 'enterprise' ? '∞'
+                          : '?'
+                )}
+              </span>
+            </p>
           </div>
           <div className="bg-white p-6 rounded-lg border border-slate-200">
             <p className="text-slate-600 mb-2">Total Jobs</p>
@@ -133,13 +147,12 @@ export default function RecruiterDashboard() {
                         <td className="px-6 py-4 text-slate-600">{job.location}</td>
                         <td className="px-6 py-4">
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                              job.status === 'approved'
-                                ? 'bg-green-100 text-green-800'
-                                : job.status === 'pending'
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${job.status === 'approved'
+                              ? 'bg-green-100 text-green-800'
+                              : job.status === 'pending'
                                 ? 'bg-yellow-100 text-yellow-800'
                                 : 'bg-red-100 text-red-800'
-                            }`}
+                              }`}
                           >
                             {job.status}
                           </span>

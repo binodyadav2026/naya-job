@@ -136,7 +136,7 @@ export default function Subscription() {
 
       if (demo_mode) {
         toast.info('Running in demo mode - Simulating payment...');
-        
+
         // Simulate payment success after 2 seconds
         setTimeout(async () => {
           try {
@@ -194,7 +194,7 @@ export default function Subscription() {
           color: '#4F46E5'
         },
         modal: {
-          ondismiss: function() {
+          ondismiss: function () {
             setProcessing(false);
             setSelectedPlan(null);
           }
@@ -222,7 +222,14 @@ export default function Subscription() {
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm text-slate-600 mb-1">Current Plan</p>
-                <p className="text-2xl font-bold text-[#4F46E5] capitalize">{profile.subscription_plan}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-2xl font-bold text-[#4F46E5] capitalize">{profile.subscription_plan}</p>
+                  {profile.custom_job_limit && (
+                    <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">
+                      Synced from Placfy
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="text-right">
                 <p className="text-sm text-slate-600 mb-1">Status</p>
@@ -237,7 +244,15 @@ export default function Subscription() {
               </div>
               <div className="text-right">
                 <p className="text-sm text-slate-600 mb-1">Jobs Posted</p>
-                <p className="text-2xl font-bold text-[#0F172A]">{profile.jobs_posted_this_month}</p>
+                <p className="text-2xl font-bold text-[#0F172A]">
+                  {profile.jobs_posted_this_month}
+                  <span className="text-slate-400 text-lg mx-1">/</span>
+                  <span className="text-slate-600">
+                    {profile.custom_job_limit !== undefined && profile.custom_job_limit !== null
+                      ? profile.custom_job_limit
+                      : plans.find(p => p.plan_id === profile.subscription_plan)?.jobLimit || 1}
+                  </span>
+                </p>
               </div>
             </div>
           </div>
@@ -247,16 +262,15 @@ export default function Subscription() {
           {plans.map((plan) => (
             <div
               key={plan.plan_id}
-              className={`bg-white p-8 rounded-lg border-2 relative ${
-                plan.popular ? 'border-[#4F46E5] shadow-lg' : 'border-slate-200'
-              }`}
+              className={`bg-white p-8 rounded-lg border-2 relative ${plan.popular ? 'border-[#4F46E5] shadow-lg' : 'border-slate-200'
+                }`}
             >
               {plan.popular && (
                 <div className="absolute top-0 right-0 bg-[#4F46E5] text-white px-4 py-1 rounded-bl-lg rounded-tr-lg text-sm font-semibold">
                   Popular
                 </div>
               )}
-              
+
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold text-[#0F172A] mb-2">{plan.name}</h3>
                 <div className="mb-4">
@@ -279,20 +293,19 @@ export default function Subscription() {
 
               <Button
                 onClick={() => handleSubscribe(plan)}
-                className={`w-full rounded-full py-6 font-semibold ${
-                  plan.popular
+                className={`w-full rounded-full py-6 font-semibold ${plan.popular
                     ? 'bg-[#4F46E5] hover:bg-[#4338CA] text-white'
                     : 'bg-slate-100 hover:bg-slate-200 text-[#0F172A]'
-                }`}
+                  }`}
                 disabled={processing && selectedPlan?.plan_id === plan.plan_id}
               >
                 {processing && selectedPlan?.plan_id === plan.plan_id
                   ? 'Processing...'
                   : profile?.subscription_plan === plan.plan_id
-                  ? 'Current Plan'
-                  : plan.plan_id === 'free'
-                  ? 'Free'
-                  : 'Subscribe'}
+                    ? 'Current Plan'
+                    : plan.plan_id === 'free'
+                      ? 'Free'
+                      : 'Subscribe'}
               </Button>
             </div>
           ))}
