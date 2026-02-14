@@ -49,12 +49,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Create the main app
 app = FastAPI()
 
-from fastapi.staticfiles import StaticFiles
-# Mount static files
-static_dir = ROOT_DIR / "static"
-static_dir.mkdir(exist_ok=True)
-app.mount("/static", StaticFiles(directory=static_dir), name="static")
-
 
 import traceback
 from fastapi.responses import JSONResponse
@@ -125,7 +119,9 @@ class RecruiterProfile(BaseModel):
     subscription_status: str = "inactive"  # active, inactive, expired
     subscription_start: Optional[datetime] = None
     subscription_end: Optional[datetime] = None
+    subscription_end: Optional[datetime] = None
     jobs_posted_this_month: int = 0
+    custom_job_limit: Optional[int] = None  # Override for Placfy users
 
 class Job(BaseModel):
     job_id: str
@@ -191,6 +187,13 @@ class Payment(BaseModel):
     razorpay_payment_id: Optional[str] = None
     status: str
     created_at: datetime
+
+class SubscriptionSyncRequest(BaseModel):
+    email: EmailStr
+    plan_name: str
+    status: str
+    job_limit: Optional[int] = None
+    secret: str
 
 # ============ AUTH HELPERS ============
 
@@ -518,7 +521,11 @@ async def create_job(job_data: JobCreate, request: Request, session_token: Optio
     subscription_plan = profile.get("subscription_plan", "free")
     subscription_status = profile.get("subscription_status", "inactive")
     jobs_posted = profile.get("jobs_posted_this_month", 0)
-    job_limit = plan_limits.get(subscription_plan, 0)
+    
+    # Check for custom limit (Placfy Override)
+    job_limit = profile.get("custom_job_limit")
+    if job_limit is None:
+        job_limit = plan_limits.get(subscription_plan, 0)
     
     # Check if subscription is active (except for free plan's first job)
     if subscription_plan != "free" and subscription_status != "active":
@@ -1170,10 +1177,44 @@ async def get_analytics(request: Request, session_token: Optional[str] = Cookie(
     }
 
 # Include router
-app.include_router(api_router)
+# Include router (Moved to end to ensure all routes are registered)
+# app.include_router(api_router)
 
 
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+@api_router.post("/integrations/placfy/sync-subscription")
+async def sync_placfy_subscription(data: SubscriptionSyncRequest):
+    """Webhook to receive subscription updates from Placfy"""
+    # Verify Secret (Simple check)
+    expected_secret = os.environ.get("PLACFY_INTERNAL_SECRET", "placfy_naya_sync_secret")
+    if data.secret != expected_secret:
+         raise HTTPException(status_code=403, detail="Invalid Secret")
+    
+    # Find user by email
+    user = await db.users.find_one({"email": data.email})
+    if not user:
+         raise HTTPException(status_code=404, detail="User not found with this email")
+    
+    # Upsert Recruiter Profile
+    update_data = {
+        "subscription_plan": data.plan_name,
+        "subscription_status": data.status,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    if data.job_limit is not None:
+        update_data["custom_job_limit"] = data.job_limit
+        
+    await db.recruiter_profiles.update_one(
+        {"user_id": user["user_id"]},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    return {"message": "Subscription synced successfully"}
+
+# Include router at the end to ensure all routes are registered
+app.include_router(api_router)
