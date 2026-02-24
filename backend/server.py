@@ -51,6 +51,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 app = FastAPI()
 
 
+
+
 import traceback
 from fastapi.responses import JSONResponse
 
@@ -196,6 +198,8 @@ class Payment(BaseModel):
 
 class SubscriptionSyncRequest(BaseModel):
     email: EmailStr
+    name: Optional[str] = None
+    password: Optional[str] = None
     plan_name: str
     status: str
     job_limit: Optional[int] = None
@@ -1203,7 +1207,41 @@ async def sync_placfy_subscription(data: SubscriptionSyncRequest):
     # Find user by email
     user = await db.users.find_one({"email": data.email})
     if not user:
-         raise HTTPException(status_code=404, detail="User not found with this email")
+        # Auto-provision a new Recruiter account
+        user_id = f"user_{uuid.uuid4().hex[:12]}"
+        
+        raw_password = data.password if data.password else uuid.uuid4().hex
+        hashed_password = pwd_context.hash(raw_password)
+        
+        user_doc = {
+            "user_id": user_id,
+            "email": data.email,
+            "name": data.name or data.email.split('@')[0],
+            "role": "recruiter",
+            "password_hash": hashed_password,
+            "picture": None,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.users.insert_one(user_doc)
+        
+        # Create initial profile
+        profile_doc = {
+            "user_id": user_id,
+            "company_name": "",
+            "subscription_plan": "free",
+            "subscription_status": "inactive",
+            "jobs_posted_this_month": 0
+        }
+        await db.recruiter_profiles.insert_one(profile_doc)
+        user = user_doc
+    else:
+        # If the user exists and Placfy provides a new password, update it
+        if data.password:
+            hashed_password = pwd_context.hash(data.password)
+            await db.users.update_one(
+                {"_id": user["_id"]},
+                {"$set": {"password_hash": hashed_password}}
+            )
     
     # Upsert Recruiter Profile
     update_data = {
