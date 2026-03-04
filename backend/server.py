@@ -44,6 +44,13 @@ if not JWT_SECRET:
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 7
 
+# Fix for passlib + bcrypt >= 4.0.0 compatibility
+import bcrypt
+if not hasattr(bcrypt, "__about__"):
+    class _MockAbout:
+        __version__ = bcrypt.__version__
+    bcrypt.__about__ = _MockAbout()
+
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
