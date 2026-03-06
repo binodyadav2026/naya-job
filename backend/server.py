@@ -685,7 +685,8 @@ async def apply_to_job(
     # Sync to Placfy (Fire and Forget)
     try:
         async with httpx.AsyncClient() as client:
-            webhook_url = "http://localhost:8000/api/v1/jobs/webhook/application/"
+            base_webhook_url = os.environ.get('PLACFY_BACKEND_URL', 'http://localhost:8000')
+            webhook_url = f"{base_webhook_url.rstrip('/')}/api/v1/jobs/webhook/application/"
             payload = {
                 "naya_application_id": application_id,
                 "job_id": job_id,
