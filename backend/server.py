@@ -63,10 +63,18 @@ app = FastAPI()
 import traceback
 from fastapi.responses import JSONResponse
 
-# Add CORS middleware (already done, but ensure app defined first)
+# Add CORS middleware - reads allowed origins from CORS_ORIGINS env var
+_cors_env = os.environ.get("CORS_ORIGINS", "")
+_allowed_origins = [o.strip() for o in _cors_env.split(",") if o.strip()] if _cors_env else [
+    "https://naya.placfy.com",
+    "https://frontend2.placfy.com",
+    "https://backend.placfy.com",
+    "http://localhost:3000",
+    "http://localhost:5173",
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development
+    allow_origins=_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
