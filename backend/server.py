@@ -25,7 +25,7 @@ class UserMessage:
 
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+load_dotenv(ROOT_DIR / '.env', override=True)
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -241,16 +241,20 @@ async def get_current_user(request: Request, session_token: Optional[str] = Cook
             payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
             user_id = payload.get('user_id')
             if not user_id:
+                print(f"DEBUG AUTH: No user_id in payload: {payload}")
                 raise HTTPException(status_code=401, detail="Invalid token")
             
             user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
             if not user_doc:
+                print(f"DEBUG AUTH: User {user_id} not found in DB")
                 raise HTTPException(status_code=401, detail="User not found")
             
             return User(**user_doc)
         except jwt.ExpiredSignatureError:
+            print("DEBUG AUTH: Token expired")
             raise HTTPException(status_code=401, detail="Token expired")
-        except jwt.JWTError:
+        except jwt.PyJWTError as e:
+            print(f"DEBUG AUTH: PyJWTError: {e}")
             raise HTTPException(status_code=401, detail="Invalid token")
     
     # Otherwise, check session in database (for OAuth)
