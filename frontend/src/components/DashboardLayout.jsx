@@ -28,7 +28,7 @@ export default function DashboardLayout({ children, user, navigation }) {
         <div className="p-6 border-b border-slate-700">
           <Link to="/" className="flex items-center space-x-2">
             <Briefcase className="h-8 w-8 text-[#4F46E5]" />
-            <span className="text-xl font-bold">JobConnect</span>
+            <span className="text-xl font-bold">Naya Job</span>
           </Link>
         </div>
 
