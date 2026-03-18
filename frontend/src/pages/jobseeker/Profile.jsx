@@ -1,10 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Home, User, Search, FileText, MessageSquare } from 'lucide-react';
+import {
+  BadgeIndianRupee,
+  BriefcaseBusiness,
+  FileText,
+  Home,
+  MapPin,
+  MessageSquare,
+  Plus,
+  Search,
+  Sparkles,
+  User,
+  X,
+} from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { Textarea } from '../../components/ui/textarea';
+import DashboardSectionHeader from '../../components/dashboard/DashboardSectionHeader';
 import { toast } from 'sonner';
 import api from '../../utils/api';
 
@@ -53,8 +67,9 @@ export default function JobSeekerProfile() {
   };
 
   const handleAddSkill = () => {
-    if (skillInput.trim() && !profile.skills.includes(skillInput.trim())) {
-      setProfile({ ...profile, skills: [...profile.skills, skillInput.trim()] });
+    const normalizedSkill = skillInput.trim();
+    if (normalizedSkill && !profile.skills.includes(normalizedSkill)) {
+      setProfile({ ...profile, skills: [...profile.skills, normalizedSkill] });
       setSkillInput('');
     }
   };
@@ -80,8 +95,8 @@ export default function JobSeekerProfile() {
   if (loading) {
     return (
       <DashboardLayout user={user} navigation={navigation}>
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4F46E5]"></div>
+        <div className="flex h-64 items-center justify-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-accent"></div>
         </div>
       </DashboardLayout>
     );
@@ -89,116 +104,208 @@ export default function JobSeekerProfile() {
 
   return (
     <DashboardLayout user={user} navigation={navigation}>
-      <div data-testid="jobseeker-profile">
-        <h1 className="text-3xl font-bold text-[#0F172A] mb-8">My Profile</h1>
+      <div className="space-y-8" data-testid="jobseeker-profile">
+        <section className="hero-grid relative overflow-hidden rounded-[2rem] px-6 py-8 text-white sm:px-8 sm:py-10">
+          <div className="ambient-orb left-[-3rem] top-8 h-40 w-40 bg-fuchsia-500/35" />
+          <div className="ambient-orb bottom-0 right-8 h-44 w-44 bg-cyan-400/18" />
 
-        <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg border border-slate-200 space-y-6">
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="relative grid gap-8 xl:grid-cols-[1.1fr_0.9fr]">
             <div>
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                name="location"
-                value={profile.location || ''}
-                onChange={handleChange}
-                placeholder="e.g., New York, NY"
-                className="mt-1"
-              />
+              <div className="inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80">
+                Candidate profile builder
+              </div>
+              <h1 className="mt-6 max-w-3xl text-4xl font-heading font-extrabold tracking-[-0.05em] text-white sm:text-5xl">
+                Build a profile that makes recruiter decisions easier.
+              </h1>
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-300">
+                The stronger your profile, the better your role fit, AI recommendations, and recruiter confidence across the platform.
+              </p>
             </div>
 
-            <div>
-              <Label htmlFor="experience_years">Years of Experience</Label>
-              <Input
-                id="experience_years"
-                name="experience_years"
-                type="number"
-                value={profile.experience_years || 0}
-                onChange={handleChange}
-                className="mt-1"
-              />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5 backdrop-blur-md">
+                <div className="text-xs uppercase tracking-[0.18em] text-white/50">Skills added</div>
+                <div className="mt-3 text-3xl font-heading font-extrabold text-white">{profile.skills?.length || 0}</div>
+              </div>
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5 backdrop-blur-md">
+                <div className="text-xs uppercase tracking-[0.18em] text-white/50">Experience</div>
+                <div className="mt-3 text-3xl font-heading font-extrabold text-white">{profile.experience_years || 0}y</div>
+              </div>
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5 backdrop-blur-md sm:col-span-2">
+                <div className="text-xs uppercase tracking-[0.18em] text-white/50">Profile signal</div>
+                <div className="mt-3 text-3xl font-heading font-extrabold text-white">
+                  {profile.bio?.trim() && profile.skills?.length > 2 ? 'Strong' : 'Needs refinement'}
+                </div>
+                <p className="mt-3 text-sm leading-6 text-white/70">
+                  Clear role preferences, strong skills, and a concise summary help recruiters trust the profile faster.
+                </p>
+              </div>
             </div>
           </div>
+        </section>
 
-          <div>
-            <Label htmlFor="bio">Bio</Label>
-            <textarea
-              id="bio"
-              name="bio"
-              value={profile.bio || ''}
-              onChange={handleChange}
-              rows={4}
-              className="mt-1 w-full rounded-md border border-slate-200 p-2 focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
-              placeholder="Tell us about yourself..."
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <section className="premium-panel p-6 sm:p-8">
+            <DashboardSectionHeader
+              eyebrow="Core profile"
+              title="Your professional identity"
+              description="Capture the profile essentials recruiters look at first."
             />
-          </div>
 
-          <div>
-            <Label>Skills</Label>
-            <div className="flex gap-2 mt-1">
+            <div className="mt-6 grid gap-6 md:grid-cols-2">
+              <div>
+                <Label htmlFor="location">Location</Label>
+                <div className="relative mt-2">
+                  <MapPin className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    id="location"
+                    name="location"
+                    value={profile.location || ''}
+                    onChange={handleChange}
+                    placeholder="e.g., New York, NY"
+                    className="h-12 rounded-[1.25rem] border-slate-200 bg-slate-50 pl-11"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="experience_years">Years of Experience</Label>
+                <div className="relative mt-2">
+                  <BriefcaseBusiness className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    id="experience_years"
+                    name="experience_years"
+                    type="number"
+                    value={profile.experience_years || 0}
+                    onChange={handleChange}
+                    className="h-12 rounded-[1.25rem] border-slate-200 bg-slate-50 pl-11"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <Label htmlFor="bio">Professional Summary</Label>
+              <Textarea
+                id="bio"
+                name="bio"
+                value={profile.bio || ''}
+                onChange={handleChange}
+                rows={6}
+                className="mt-2 rounded-[1.25rem] border-slate-200 bg-slate-50 px-4 py-3"
+                placeholder="Summarize your strengths, experience, and the kind of work you want to be known for..."
+              />
+            </div>
+          </section>
+
+          <section className="premium-panel p-6 sm:p-8">
+            <DashboardSectionHeader
+              eyebrow="Skills"
+              title="Highlight the capabilities recruiters should notice"
+              description="Keep this focused and high-signal so role matching becomes stronger."
+            />
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Input
                 value={skillInput}
                 onChange={(e) => setSkillInput(e.target.value)}
                 placeholder="Add a skill"
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSkill())}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddSkill();
+                  }
+                }}
+                className="h-12 rounded-[1.25rem] border-slate-200 bg-slate-50 px-4"
               />
-              <Button type="button" onClick={handleAddSkill} className="bg-[#4F46E5] hover:bg-[#4338CA]">
-                Add
+              <Button type="button" variant="accent" onClick={handleAddSkill} className="sm:min-w-[140px]">
+                <Plus className="h-4 w-4" />
+                Add skill
               </Button>
             </div>
-            <div className="flex flex-wrap gap-2 mt-4">
-              {profile.skills.map((skill) => (
-                <span
-                  key={skill}
-                  className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm font-medium flex items-center gap-2"
-                >
-                  {skill}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveSkill(skill)}
-                    className="text-red-500 hover:text-red-700"
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              {profile.skills?.length > 0 ? (
+                profile.skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-2 text-sm font-semibold text-accent"
                   >
-                    ×
-                  </button>
-                </span>
-              ))}
+                    {skill}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSkill(skill)}
+                      className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/70 text-accent transition-colors hover:bg-white"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))
+              ) : (
+                <div className="rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
+                  Add your strongest skills so recruiters and AI recommendations can match you better.
+                </div>
+              )}
             </div>
+          </section>
+
+          <section className="premium-panel p-6 sm:p-8">
+            <DashboardSectionHeader
+              eyebrow="Compensation preferences"
+              title="Set a cleaner salary range"
+              description="Use a clear range to guide opportunity fit and recruiter expectations."
+            />
+
+            <div className="mt-6 grid gap-6 md:grid-cols-2">
+              <div>
+                <Label htmlFor="preferred_salary_min">Minimum Salary (Annual)</Label>
+                <div className="relative mt-2">
+                  <BadgeIndianRupee className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    id="preferred_salary_min"
+                    name="preferred_salary_min"
+                    type="number"
+                    value={profile.preferred_salary_min || ''}
+                    onChange={handleChange}
+                    className="h-12 rounded-[1.25rem] border-slate-200 bg-slate-50 pl-11"
+                    placeholder="e.g., 50000"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="preferred_salary_max">Maximum Salary (Annual)</Label>
+                <div className="relative mt-2">
+                  <BadgeIndianRupee className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    id="preferred_salary_max"
+                    name="preferred_salary_max"
+                    type="number"
+                    value={profile.preferred_salary_max || ''}
+                    onChange={handleChange}
+                    className="h-12 rounded-[1.25rem] border-slate-200 bg-slate-50 pl-11"
+                    placeholder="e.g., 80000"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-[1.5rem] border border-slate-200 bg-slate-50 px-5 py-4 text-sm leading-6 text-slate-600">
+              A realistic salary preference helps surface better-fit roles and gives recruiters faster context.
+            </div>
+          </section>
+
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              variant="accent"
+              size="xl"
+              className="min-w-[220px]"
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : 'Save profile'}
+            </Button>
           </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <Label htmlFor="preferred_salary_min">Minimum Salary (Annual)</Label>
-              <Input
-                id="preferred_salary_min"
-                name="preferred_salary_min"
-                type="number"
-                value={profile.preferred_salary_min || ''}
-                onChange={handleChange}
-                className="mt-1"
-                placeholder="e.g., 50000"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="preferred_salary_max">Maximum Salary (Annual)</Label>
-              <Input
-                id="preferred_salary_max"
-                name="preferred_salary_max"
-                type="number"
-                value={profile.preferred_salary_max || ''}
-                onChange={handleChange}
-                className="mt-1"
-                placeholder="e.g., 80000"
-              />
-            </div>
-          </div>
-
-          <Button
-            type="submit"
-            className="w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-full py-6 font-semibold"
-            disabled={saving}
-          >
-            {saving ? 'Saving...' : 'Save Profile'}
-          </Button>
         </form>
       </div>
     </DashboardLayout>

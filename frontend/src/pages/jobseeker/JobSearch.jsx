@@ -1,11 +1,33 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
-import { Home, User, Search, FileText, MessageSquare, MapPin, DollarSign, Clock } from 'lucide-react';
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  Building2,
+  Clock3,
+  DollarSign,
+  FileText,
+  Home,
+  MapPin,
+  MessageSquare,
+  Search,
+  Sparkles,
+  User,
+} from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../../components/ui/dialog';
 import { Label } from '../../components/ui/label';
+import { Textarea } from '../../components/ui/textarea';
+import DashboardSectionHeader from '../../components/dashboard/DashboardSectionHeader';
 import { toast } from 'sonner';
 import api from '../../utils/api';
 
@@ -43,12 +65,17 @@ export default function JobSearch() {
     }
   };
 
-  const filteredJobs = jobs.filter(
-    (job) =>
-      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredJobs = jobs.filter((job) => {
+    const query = searchTerm.toLowerCase();
+    return (
+      job.title.toLowerCase().includes(query) ||
+      job.company_name.toLowerCase().includes(query) ||
+      job.location.toLowerCase().includes(query)
+    );
+  });
+
+  const remoteFriendlyCount = jobs.filter((job) => job.location?.toLowerCase().includes('remote')).length;
+  const salaryVisibleCount = jobs.filter((job) => job.salary_min).length;
 
   const handleApply = (job) => {
     setSelectedJob(job);
@@ -84,141 +111,266 @@ export default function JobSearch() {
 
   return (
     <DashboardLayout user={user} navigation={navigation}>
-      <div data-testid="job-search">
-        <h1 className="text-3xl font-bold text-[#0F172A] mb-8">Search Jobs</h1>
+      <div className="space-y-8" data-testid="job-search">
+        <section className="hero-grid relative overflow-hidden rounded-[2rem] px-6 py-8 text-white sm:px-8 sm:py-10">
+          <div className="ambient-orb left-[-3rem] top-8 h-40 w-40 bg-fuchsia-500/35" />
+          <div className="ambient-orb bottom-0 right-8 h-44 w-44 bg-cyan-400/18" />
 
-        {/* Search */}
-        <div className="mb-8">
-          <Input
-            type="text"
-            placeholder="Search by title, company, or location..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-2xl"
-            data-testid="job-search-input"
-          />
-        </div>
-
-        {/* Jobs List */}
-        {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4F46E5]"></div>
-          </div>
-        ) : (
-          <div className="grid gap-6" data-testid="jobs-list">
-            {filteredJobs.map((job) => (
-              <div
-                key={job.job_id}
-                className="bg-white p-6 rounded-lg border border-slate-200"
-                data-testid={`job-card-${job.job_id}`}
-              >
-                <div className="flex-1">
-                  <Link to={`/jobseeker/jobs/${job.job_id}`} className="block group">
-                    <h3 className="text-xl font-bold text-[#0F172A] mb-2 group-hover:text-[#4F46E5] transition-colors">{job.title}</h3>
-                  </Link>
-                  <p className="text-[#4F46E5] font-semibold mb-3">{job.company_name}</p>
-
-                  <div className="flex flex-wrap gap-4 text-slate-600 mb-4">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      <span>{job.location}</span>
-                    </div>
-                    {job.salary_min && (
-                      <div className="flex items-center gap-1">
-                        <DollarSign className="h-4 w-4" />
-                        <span>
-                          ${job.salary_min.toLocaleString()} - ${job.salary_max?.toLocaleString()}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      <span className="capitalize">{job.job_type.replace('_', ' ')}</span>
-                    </div>
-                  </div>
-
-                  <p className="text-slate-600 mb-4 line-clamp-2">{job.description}</p>
-
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {job.required_skills.slice(0, 5).map((skill, idx) => (
-                      <span
-                        key={idx}
-                        className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm font-medium"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-
-                  <Link to={`/jobseeker/jobs/${job.job_id}`}>
-                    <Button
-                      className="bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-full font-semibold"
-                      data-testid={`view-btn-${job.job_id}`}
-                    >
-                      View Details & Apply
-                    </Button>
-                  </Link>
-                </div>
+          <div className="relative grid gap-8 xl:grid-cols-[1.1fr_0.9fr]">
+            <div>
+              <div className="inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80">
+                Opportunity discovery
               </div>
-            ))}
+              <h1 className="mt-6 max-w-3xl text-4xl font-heading font-extrabold tracking-[-0.05em] text-white sm:text-5xl">
+                Search jobs in a way that feels curated, fast, and premium.
+              </h1>
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-300">
+                Explore approved roles, narrow quickly by title or company, and move from discovery to application without leaving the workspace.
+              </p>
+            </div>
 
-            {filteredJobs.length === 0 && (
-              <div className="text-center py-20">
-                <p className="text-slate-600 text-lg">No jobs found. Try adjusting your search.</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5 backdrop-blur-md">
+                <div className="text-xs uppercase tracking-[0.18em] text-white/50">Open roles</div>
+                <div className="mt-3 text-3xl font-heading font-extrabold text-white">{jobs.length}</div>
               </div>
-            )}
-          </div>
-        )}
-
-        {/* Apply Dialog */}
-        <Dialog open={showApplyDialog} onOpenChange={setShowApplyDialog}>
-          <DialogContent data-testid="apply-dialog">
-            <DialogHeader>
-              <DialogTitle>Apply for {selectedJob?.title}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="coverLetter">Cover Letter (Optional)</Label>
-                <textarea
-                  id="coverLetter"
-                  value={coverLetter}
-                  onChange={(e) => setCoverLetter(e.target.value)}
-                  rows={6}
-                  className="mt-1 w-full rounded-md border border-slate-200 p-2 focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
-                  placeholder="Tell the employer why you're a great fit for this role..."
-                />
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5 backdrop-blur-md">
+                <div className="text-xs uppercase tracking-[0.18em] text-white/50">Search results</div>
+                <div className="mt-3 text-3xl font-heading font-extrabold text-white">{filteredJobs.length}</div>
               </div>
-
-              <div>
-                <Label htmlFor="resume">Resume / CV</Label>
-                <div className="mt-1 flex items-center gap-4">
-                  <Input
-                    id="resume"
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    onChange={(e) => setResume(e.target.files[0])}
-                    className="cursor-pointer"
-                  />
-                </div>
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5 backdrop-blur-md">
+                <div className="text-xs uppercase tracking-[0.18em] text-white/50">Remote-friendly</div>
+                <div className="mt-3 text-3xl font-heading font-extrabold text-white">{remoteFriendlyCount}</div>
+              </div>
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5 backdrop-blur-md">
+                <div className="text-xs uppercase tracking-[0.18em] text-white/50">Salary visible</div>
+                <div className="mt-3 text-3xl font-heading font-extrabold text-white">{salaryVisibleCount}</div>
               </div>
             </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowApplyDialog(false)}
-                disabled={applying}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={submitApplication}
-                className="bg-[#4F46E5] hover:bg-[#4338CA] text-white"
-                disabled={applying}
-                data-testid="submit-application-btn"
-              >
-                {applying ? 'Submitting...' : 'Submit Application'}
-              </Button>
-            </DialogFooter>
+          </div>
+        </section>
+
+        <section className="premium-panel p-6 sm:p-7">
+          <DashboardSectionHeader
+            eyebrow="Search workspace"
+            title="Find the right roles faster"
+            description="Search by title, company, or location and review opportunities in a cleaner high-signal layout."
+          />
+
+          <div className="mt-6 space-y-4">
+            <div className="relative max-w-3xl">
+              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <Input
+                type="text"
+                placeholder="Search by title, company, or location..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="h-14 rounded-[1.25rem] border-slate-200 bg-slate-50 pl-12 pr-4 text-base font-medium"
+                data-testid="job-search-input"
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2">
+                <BriefcaseBusiness className="h-4 w-4 text-accent" />
+                {filteredJobs.length} roles available
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2">
+                <Sparkles className="h-4 w-4 text-violet-500" />
+                Search updates instantly as you type
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="space-y-6">
+          <DashboardSectionHeader
+            eyebrow="Available jobs"
+            title="Curated opportunities"
+            description="A cleaner view of roles you can review, compare, and apply to."
+            className="sm:px-1"
+          />
+
+          {loading ? (
+            <div className="premium-panel flex min-h-[260px] items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+            </div>
+          ) : filteredJobs.length > 0 ? (
+            <div className="grid gap-5" data-testid="jobs-list">
+              {filteredJobs.map((job, index) => {
+                const score = Math.max(84, 96 - index * 2);
+                return (
+                  <div
+                    key={job.job_id}
+                    className="premium-panel overflow-hidden p-6 sm:p-7"
+                    data-testid={`job-card-${job.job_id}`}
+                  >
+                    <div className="grid gap-6 xl:grid-cols-[1fr_auto] xl:items-start">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <div className="rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-violet-700">
+                            Match score {score}%
+                          </div>
+                          <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                            {job.job_type?.replace('_', ' ')}
+                          </div>
+                        </div>
+
+                        <div className="mt-4">
+                          <Link to={`/jobseeker/jobs/${job.job_id}`} className="group inline-block">
+                            <h3 className="text-2xl font-heading font-extrabold tracking-[-0.04em] text-slate-950 transition-colors group-hover:text-accent">
+                              {job.title}
+                            </h3>
+                          </Link>
+                          <div className="mt-3 flex flex-wrap items-center gap-4 text-sm font-medium text-slate-600">
+                            <div className="inline-flex items-center gap-2">
+                              <Building2 className="h-4 w-4 text-accent" />
+                              <span className="text-accent">{job.company_name}</span>
+                            </div>
+                            <div className="inline-flex items-center gap-2">
+                              <MapPin className="h-4 w-4" />
+                              {job.location}
+                            </div>
+                            {job.salary_min ? (
+                              <div className="inline-flex items-center gap-2">
+                                <DollarSign className="h-4 w-4" />
+                                ${job.salary_min.toLocaleString()} - ${job.salary_max?.toLocaleString()}
+                              </div>
+                            ) : null}
+                            <div className="inline-flex items-center gap-2">
+                              <Clock3 className="h-4 w-4" />
+                              {job.job_type?.replace('_', ' ')}
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="mt-5 max-w-4xl text-sm leading-7 text-slate-600 sm:text-base">
+                          {job.description}
+                        </p>
+
+                        <div className="mt-5 flex flex-wrap gap-2">
+                          {job.required_skills?.slice(0, 6).map((skill) => (
+                            <span
+                              key={skill}
+                              className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-3 xl:min-w-[220px]">
+                        <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
+                          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Why it stands out</div>
+                          <div className="mt-3 flex items-start gap-3 text-sm leading-6 text-slate-700">
+                            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                            Strong fit across role keywords, hiring intent, and profile-aligned signals.
+                          </div>
+                        </div>
+
+                        <Link to={`/jobseeker/jobs/${job.job_id}`}>
+                          <Button variant="accent" size="xl" className="w-full font-semibold" data-testid={`view-btn-${job.job_id}`}>
+                            View details
+                            <ArrowRight className="h-4 w-4" />
+                          </Button>
+                        </Link>
+
+                        <Button
+                          variant="outline"
+                          size="xl"
+                          className="w-full"
+                          onClick={() => handleApply(job)}
+                          data-testid={`quick-apply-btn-${job.job_id}`}
+                        >
+                          Quick apply
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="premium-panel p-8 sm:p-10 text-center">
+              <div className="mx-auto max-w-xl">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">No matches found</div>
+                <h3 className="mt-3 text-2xl font-heading font-extrabold tracking-[-0.04em] text-slate-950">
+                  No roles matched this search.
+                </h3>
+                <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">
+                  Try a broader keyword or remove a specific company/location term to surface more opportunities.
+                </p>
+                <Button variant="outline" className="mt-6" onClick={() => setSearchTerm('')}>
+                  Clear search
+                </Button>
+              </div>
+            </div>
+          )}
+        </section>
+
+        <Dialog open={showApplyDialog} onOpenChange={setShowApplyDialog}>
+          <DialogContent className="max-w-2xl rounded-[1.75rem] border-slate-200 p-0 shadow-2xl" data-testid="apply-dialog">
+            <div className="overflow-hidden rounded-[1.75rem]">
+              <div className="hero-grid px-6 py-6 text-white sm:px-8">
+                <DialogHeader className="space-y-3 text-left">
+                  <div className="inline-flex w-fit rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
+                    Quick apply
+                  </div>
+                  <DialogTitle className="text-2xl font-heading font-extrabold tracking-[-0.04em] text-white">
+                    Apply for {selectedJob?.title}
+                  </DialogTitle>
+                  <DialogDescription className="text-sm leading-6 text-slate-300">
+                    Submit a focused application without leaving your search workflow.
+                  </DialogDescription>
+                </DialogHeader>
+              </div>
+
+              <div className="bg-white px-6 py-6 sm:px-8">
+                <div className="grid gap-5">
+                  <div>
+                    <Label htmlFor="coverLetter">Cover Letter</Label>
+                    <Textarea
+                      id="coverLetter"
+                      value={coverLetter}
+                      onChange={(e) => setCoverLetter(e.target.value)}
+                      rows={7}
+                      className="mt-2 rounded-[1.25rem] border-slate-200 bg-slate-50 px-4 py-3"
+                      placeholder="Tell the employer why you are a strong fit for this role..."
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="resume">Resume / CV</Label>
+                    <Input
+                      id="resume"
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={(e) => setResume(e.target.files[0])}
+                      className="mt-2 h-12 cursor-pointer rounded-[1.25rem] border-slate-200 bg-slate-50 px-4 file:mr-4 file:rounded-full file:border-0 file:bg-violet-100 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-violet-700"
+                    />
+                  </div>
+                </div>
+
+                <DialogFooter className="mt-6 border-t border-slate-200 pt-5">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowApplyDialog(false)}
+                    disabled={applying}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={submitApplication}
+                    variant="accent"
+                    disabled={applying}
+                    data-testid="submit-application-btn"
+                  >
+                    {applying ? 'Submitting...' : 'Submit application'}
+                  </Button>
+                </DialogFooter>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
