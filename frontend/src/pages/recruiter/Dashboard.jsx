@@ -1,9 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
-import { Home, User, Briefcase, FileText, MessageSquare, CreditCard } from 'lucide-react';
+import {
+  ArrowRight,
+  Briefcase,
+  CreditCard,
+  FileText,
+  Home,
+  MessageSquare,
+  ShieldCheck,
+  Sparkles,
+  TrendingUp,
+  User,
+  Users2,
+} from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { Button } from '../../components/ui/button';
 import api from '../../utils/api';
+import DashboardSectionHeader from '../../components/dashboard/DashboardSectionHeader';
+import StatPanel from '../../components/dashboard/StatPanel';
 
 const navigation = [
   { name: 'Dashboard', path: '/recruiter', icon: Home },
@@ -14,6 +28,13 @@ const navigation = [
   { name: 'Subscription', path: '/recruiter/subscription', icon: CreditCard },
 ];
 
+const statusToneMap = {
+  approved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  pending: 'bg-amber-50 text-amber-700 border-amber-200',
+  rejected: 'bg-rose-50 text-rose-700 border-rose-200',
+  closed: 'bg-slate-100 text-slate-700 border-slate-200',
+};
+
 export default function RecruiterDashboard() {
   const { user } = useOutletContext();
   const [stats, setStats] = useState({
@@ -22,7 +43,7 @@ export default function RecruiterDashboard() {
     subscription_end: null,
     jobs_posted_this_month: 0,
     custom_job_limit: null,
-    jobs: []
+    jobs: [],
   });
   const [loading, setLoading] = useState(true);
 
@@ -51,132 +72,266 @@ export default function RecruiterDashboard() {
     }
   };
 
+  const monthlyLimit =
+    stats.custom_job_limit ||
+    (stats.subscription_plan === 'free'
+      ? 1
+      : stats.subscription_plan === 'basic'
+      ? 10
+      : stats.subscription_plan === 'premium'
+      ? 50
+      : stats.subscription_plan === 'enterprise'
+      ? 'Unlimited'
+      : '?');
+
+  const approvedJobs = stats.jobs.filter((job) => job.status === 'approved').length;
+  const pendingJobs = stats.jobs.filter((job) => job.status === 'pending').length;
+  const responseMomentum = stats.jobs.length
+    ? Math.round((approvedJobs / stats.jobs.length) * 100)
+    : 0;
+
   return (
     <DashboardLayout user={user} navigation={navigation}>
-      <div data-testid="recruiter-dashboard">
-        <h1 className="text-3xl font-bold text-[#0F172A] mb-8">Recruiter Dashboard</h1>
+      <div className="space-y-8" data-testid="recruiter-dashboard">
+        <section className="hero-grid relative overflow-hidden rounded-[2rem] px-6 py-8 text-white sm:px-8 sm:py-10">
+          <div className="ambient-orb left-[-3rem] top-8 h-40 w-40 bg-fuchsia-500/35" />
+          <div className="ambient-orb bottom-0 right-8 h-44 w-44 bg-cyan-400/18" />
 
-        {/* Stats */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg border border-slate-200">
-            <p className="text-slate-600 mb-2">Current Plan</p>
-            <p className="text-3xl font-bold text-[#4F46E5] capitalize">{stats.subscription_plan}</p>
-            <Link to="/recruiter/subscription">
-              <Button className="mt-4 w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-full">
-                {stats.subscription_status === 'active' ? 'Manage' : 'Subscribe'}
-              </Button>
-            </Link>
-          </div>
-          <div className="bg-white p-6 rounded-lg border border-slate-200">
-            <p className="text-slate-600 mb-2">Subscription Status</p>
-            <p className={`text-2xl font-bold ${stats.subscription_status === 'active' ? 'text-[#10B981]' : 'text-[#F59E0B]'}`}>
-              {stats.subscription_status === 'active' ? 'Active' : 'Inactive'}
-            </p>
-            {stats.subscription_end && stats.subscription_status === 'active' && (
-              <p className="text-xs text-slate-500 mt-2">
-                Valid until: {new Date(stats.subscription_end).toLocaleDateString()}
+          <div className="relative grid gap-8 xl:grid-cols-[1.1fr_0.9fr]">
+            <div>
+              <div className="inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80">
+                Hiring operations workspace
+              </div>
+              <h1 className="mt-6 max-w-3xl text-4xl font-heading font-extrabold tracking-[-0.05em] text-white sm:text-5xl">
+                Recruit with a calmer, sharper operating system.
+              </h1>
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-300">
+                Publish roles, monitor approval status, and move candidates through the funnel with more structure and less friction.
               </p>
-            )}
-          </div>
-          <div className="bg-white p-6 rounded-lg border border-slate-200">
-            <p className="text-slate-600 mb-2">Jobs Posted This Month</p>
-            <p className="text-3xl font-bold text-[#0F172A]">
-              {stats.jobs_posted_this_month}
-              <span className="text-slate-400 text-2xl mx-1">/</span>
-              <span className="text-slate-500 text-xl">
-                {stats.custom_job_limit || (
-                  stats.subscription_plan === 'free' ? 1
-                    : stats.subscription_plan === 'basic' ? 10
-                      : stats.subscription_plan === 'premium' ? 50
-                        : stats.subscription_plan === 'enterprise' ? '∞'
-                          : '?'
-                )}
-              </span>
-            </p>
-          </div>
-          <div className="bg-white p-6 rounded-lg border border-slate-200">
-            <p className="text-slate-600 mb-2">Total Jobs</p>
-            <p className="text-3xl font-bold text-[#0F172A]">{stats.jobs.length}</p>
-          </div>
-        </div>
 
-        {/* Quick Actions */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-[#0F172A] mb-4">Quick Actions</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <Link to="/recruiter/post-job">
-              <div className="bg-white p-6 rounded-lg border border-slate-200 card-hover h-full">
-                <Briefcase className="h-12 w-12 text-[#4F46E5] mb-4" />
-                <h3 className="text-xl font-bold text-[#0F172A] mb-2">Post a New Job</h3>
-                <p className="text-slate-600">Create and publish a new job listing</p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link to="/recruiter/post-job">
+                  <Button variant="accent" size="xl" className="w-full sm:w-auto">
+                    Post a new job
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link to="/recruiter/my-jobs">
+                  <Button
+                    variant="outline"
+                    size="xl"
+                    className="w-full border-white/20 bg-white/[0.06] text-white hover:bg-white/10 sm:w-auto"
+                  >
+                    Manage open roles
+                  </Button>
+                </Link>
               </div>
-            </Link>
-            <Link to="/recruiter/my-jobs">
-              <div className="bg-white p-6 rounded-lg border border-slate-200 card-hover h-full">
-                <FileText className="h-12 w-12 text-[#4F46E5] mb-4" />
-                <h3 className="text-xl font-bold text-[#0F172A] mb-2">Manage Jobs</h3>
-                <p className="text-slate-600">View and edit your job listings</p>
-              </div>
-            </Link>
-          </div>
-        </div>
-
-        {/* Recent Jobs */}
-        <div>
-          <h2 className="text-2xl font-bold text-[#0F172A] mb-4">Recent Job Postings</h2>
-          {loading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#4F46E5]"></div>
             </div>
-          ) : stats.jobs.length > 0 ? (
-            <div className="bg-white rounded-lg border border-slate-200">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-50 border-b">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase">Job Title</th>
-                      <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase">Location</th>
-                      <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase">Posted</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {stats.jobs.slice(0, 5).map((job) => (
-                      <tr key={job.job_id}>
-                        <td className="px-6 py-4 font-medium text-[#0F172A]">{job.title}</td>
-                        <td className="px-6 py-4 text-slate-600">{job.location}</td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${job.status === 'approved'
-                              ? 'bg-green-100 text-green-800'
-                              : job.status === 'pending'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-red-100 text-red-800'
-                              }`}
-                          >
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.08] p-6 backdrop-blur-md sm:col-span-2">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <div className="text-xs uppercase tracking-[0.18em] text-white/50">Approval momentum</div>
+                    <div className="mt-3 text-4xl font-heading font-extrabold text-white">{responseMomentum}%</div>
+                    <p className="mt-3 text-sm leading-6 text-white/70">
+                      Based on how many of your active jobs are already approved and live.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/10 p-4 text-white">
+                    <TrendingUp className="h-7 w-7" />
+                  </div>
+                </div>
+                <div className="mt-5 h-2 rounded-full bg-white/10">
+                  <div
+                    className="h-2 rounded-full bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400"
+                    style={{ width: `${Math.max(responseMomentum, 12)}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5 backdrop-blur-md">
+                <div className="text-xs uppercase tracking-[0.18em] text-white/50">Live jobs</div>
+                <div className="mt-3 text-3xl font-heading font-extrabold text-white">{approvedJobs}</div>
+              </div>
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5 backdrop-blur-md">
+                <div className="text-xs uppercase tracking-[0.18em] text-white/50">Plan status</div>
+                <div className="mt-3 text-3xl font-heading font-extrabold capitalize text-white">{stats.subscription_plan}</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid gap-5 xl:grid-cols-4">
+          <StatPanel
+            icon={CreditCard}
+            label="Current plan"
+            value={stats.subscription_plan}
+            detail={stats.subscription_status === 'active' ? 'Subscription is active and ready for hiring operations.' : 'Upgrade or activate your plan to scale hiring faster.'}
+            valueClassName="capitalize text-violet-600"
+          />
+          <StatPanel
+            icon={ShieldCheck}
+            label="Subscription"
+            value={stats.subscription_status === 'active' ? 'Active' : 'Inactive'}
+            detail={stats.subscription_end && stats.subscription_status === 'active' ? `Valid until ${new Date(stats.subscription_end).toLocaleDateString()}` : 'Plan activation status is currently inactive.'}
+            valueClassName={stats.subscription_status === 'active' ? 'text-emerald-500' : 'text-amber-500'}
+          />
+          <StatPanel
+            icon={Briefcase}
+            label="Jobs this month"
+            value={`${stats.jobs_posted_this_month}/${monthlyLimit}`}
+            detail="Posted this month versus the current plan limit."
+          />
+          <StatPanel
+            icon={Users2}
+            label="Total roles"
+            value={stats.jobs.length}
+            detail={pendingJobs > 0 ? `${pendingJobs} role${pendingJobs > 1 ? 's' : ''} currently waiting for approval.` : 'All current roles are either live or closed.'}
+          />
+        </section>
+
+        <section className="grid gap-8 xl:grid-cols-[1.05fr_0.95fr]">
+          <div className="space-y-6">
+            <DashboardSectionHeader
+              eyebrow="Recent jobs"
+              title="Your most important open roles"
+              description="A cleaner view of your latest postings, statuses, and next actions."
+              className="sm:px-1"
+              action={(
+                <Link to="/recruiter/my-jobs">
+                  <Button variant="outline">View all jobs</Button>
+                </Link>
+              )}
+            />
+
+            {loading ? (
+              <div className="premium-panel flex min-h-[240px] items-center justify-center">
+                <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-accent"></div>
+              </div>
+            ) : stats.jobs.length > 0 ? (
+              <div className="grid gap-5">
+                {stats.jobs.slice(0, 3).map((job) => (
+                  <div key={job.job_id} className="premium-panel p-6 sm:p-7">
+                    <div className="grid gap-5 xl:grid-cols-[1fr_auto] xl:items-start">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${statusToneMap[job.status] || 'bg-slate-100 text-slate-700 border-slate-200'}`}>
                             {job.status}
                           </span>
-                        </td>
-                        <td className="px-6 py-4 text-slate-600">
-                          {new Date(job.posted_at).toLocaleDateString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                            {job.job_type?.replace('_', ' ')}
+                          </span>
+                        </div>
+
+                        <h3 className="mt-4 text-2xl font-heading font-extrabold tracking-[-0.04em] text-slate-950">
+                          {job.title}
+                        </h3>
+                        <p className="mt-3 text-sm font-medium text-slate-600">{job.location}</p>
+                        <p className="mt-4 line-clamp-3 text-sm leading-7 text-slate-600">{job.description}</p>
+
+                        <div className="mt-5 flex flex-wrap gap-2">
+                          {job.required_skills?.slice(0, 5).map((skill) => (
+                            <span
+                              key={skill}
+                              className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="grid gap-3 xl:min-w-[220px]">
+                        <div className="rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-3">
+                          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Posted</div>
+                          <div className="mt-2 text-sm font-semibold text-slate-900">
+                            {new Date(job.posted_at).toLocaleDateString()}
+                          </div>
+                        </div>
+
+                        {job.status === 'approved' ? (
+                          <Link to={`/recruiter/applicants/${job.job_id}`}>
+                            <Button variant="accent" className="w-full">
+                              View applicants
+                            </Button>
+                          </Link>
+                        ) : (
+                          <Button variant="outline" className="w-full" disabled>
+                            Awaiting review
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="premium-panel p-8 sm:p-10">
+                <div className="max-w-xl">
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">No roles yet</div>
+                  <h3 className="mt-3 text-2xl font-heading font-extrabold tracking-[-0.04em] text-slate-950">
+                    Start building your hiring pipeline with your first role.
+                  </h3>
+                  <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">
+                    Once you publish jobs, this area becomes your operational summary for approvals, applicants, and recruiting momentum.
+                  </p>
+                  <Link to="/recruiter/post-job">
+                    <Button variant="accent" className="mt-6">
+                      Post your first job
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-6">
+            <DashboardSectionHeader
+              eyebrow="Quick actions"
+              title="Move hiring forward"
+              description="The highest-value actions recruiters should take from the dashboard."
+            />
+
+            <div className="grid gap-5">
+              <Link to="/recruiter/post-job">
+                <div className="premium-panel p-6 transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-1 hover:border-accent/20">
+                  <div className="feature-icon">
+                    <Briefcase className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-5 text-xl font-heading font-bold text-slate-950">Post a new role</h3>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                    Launch a fresh position and get it into the approval and applicant pipeline quickly.
+                  </p>
+                </div>
+              </Link>
+
+              <Link to="/recruiter/subscription">
+                <div className="premium-panel p-6 transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-1 hover:border-accent/20">
+                  <div className="feature-icon">
+                    <CreditCard className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-5 text-xl font-heading font-bold text-slate-950">Manage subscription</h3>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                    Upgrade plan capacity, monitor limits, and keep your hiring volume aligned with growth.
+                  </p>
+                </div>
+              </Link>
+
+              <div className="premium-panel p-6">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Recruiter note</div>
+                <div className="mt-3 text-xl font-heading font-bold text-slate-950">Hiring quality beats dashboard clutter.</div>
+                <p className="mt-3 text-sm leading-6 text-slate-600">
+                  This dashboard stays focused on role momentum, plan status, and operational visibility. Detailed hiring records belong on the dedicated pages.
+                </p>
+                <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-700">
+                  <Sparkles className="h-4 w-4" />
+                  Executive recruiter workspace
+                </div>
               </div>
             </div>
-          ) : (
-            <div className="bg-white p-12 rounded-lg border border-slate-200 text-center">
-              <p className="text-slate-600 mb-4">You haven't posted any jobs yet</p>
-              <Link to="/recruiter/post-job">
-                <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-full">
-                  Post Your First Job
-                </Button>
-              </Link>
-            </div>
-          )}
-        </div>
+          </div>
+        </section>
       </div>
     </DashboardLayout>
   );

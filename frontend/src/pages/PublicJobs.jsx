@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase, MapPin, DollarSign, Clock, Search } from 'lucide-react';
+import { MapPin, DollarSign, Clock, Search } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import api from '../utils/api';
+import BrandLogo from '../components/BrandLogo';
 
 export default function PublicJobs() {
   const [jobs, setJobs] = useState([]);
@@ -41,15 +42,12 @@ export default function PublicJobs() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-surface-subtle">
       {/* Header */}
-      <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link to="/" className="flex items-center space-x-2">
-              <Briefcase className="h-8 w-8 text-[#4F46E5]" />
-              <span className="text-2xl font-bold text-[#0F172A]">JobConnect</span>
-            </Link>
+      <header className="border-b bg-white/90 backdrop-blur-xl">
+        <div className="section-container">
+          <div className="flex h-20 items-center justify-between">
+            <BrandLogo linked showWordmark />
             <div className="flex items-center space-x-4">
               <Link to="/login">
                 <Button variant="ghost" className="font-medium">
@@ -57,7 +55,7 @@ export default function PublicJobs() {
                 </Button>
               </Link>
               <Link to="/register">
-                <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-full px-6 font-semibold">
+                <Button variant="accent" className="font-semibold">
                   Get Started
                 </Button>
               </Link>
@@ -67,10 +65,10 @@ export default function PublicJobs() {
       </header>
 
       {/* Search Section */}
-      <div className="bg-[#0F172A] text-white py-16" data-testid="search-section">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold mb-8 text-center">Find Your Dream Job</h1>
-          <div className="bg-white rounded-lg p-4 flex gap-4">
+      <div className="hero-mesh py-16 text-white" data-testid="search-section">
+        <div className="section-container">
+          <h1 className="mb-8 text-center text-4xl font-heading font-extrabold tracking-[-0.04em]">Find your next role with confidence</h1>
+          <div className="premium-panel flex flex-col gap-4 rounded-[1.75rem] p-4 sm:flex-row">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
@@ -79,13 +77,14 @@ export default function PublicJobs() {
                   placeholder="Search jobs, companies..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="h-12 rounded-2xl border-slate-200 bg-slate-50 pl-10"
                   data-testid="search-input"
                 />
               </div>
             </div>
             <Button
-              className="bg-[#4F46E5] hover:bg-[#4338CA] text-white px-8 rounded-full font-semibold"
+              variant="accent"
+              size="xl"
               onClick={handleSearch}
               data-testid="search-btn"
             >
@@ -96,31 +95,31 @@ export default function PublicJobs() {
       </div>
 
       {/* Jobs List */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="section-container py-12">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-[#0F172A]">
+          <h2 className="text-2xl font-heading font-bold text-slate-950">
             {filteredJobs.length} Jobs Available
           </h2>
         </div>
 
         {loading ? (
           <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4F46E5]"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
           </div>
         ) : (
           <div className="grid gap-6" data-testid="jobs-list">
             {filteredJobs.map((job) => (
               <div
                 key={job.job_id}
-                className="bg-white p-6 rounded-lg border border-slate-200"
+                className="premium-panel p-6"
                 data-testid={`job-card-${job.job_id}`}
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <Link to={`/jobs/${job.job_id}`} className="block group">
-                      <h3 className="text-xl font-bold text-[#0F172A] mb-2 group-hover:text-[#4F46E5] transition-colors">{job.title}</h3>
+                      <h3 className="mb-2 text-xl font-heading font-bold text-slate-950 transition-colors group-hover:text-accent">{job.title}</h3>
                     </Link>
-                    <p className="text-[#4F46E5] font-semibold mb-3">{job.company_name}</p>
+                    <p className="mb-3 font-semibold text-accent">{job.company_name}</p>
 
                     <div className="flex flex-wrap gap-4 text-slate-600 mb-4">
                       <div className="flex items-center gap-1">
@@ -147,7 +146,7 @@ export default function PublicJobs() {
                       {job.required_skills.slice(0, 5).map((skill, idx) => (
                         <span
                           key={idx}
-                          className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm font-medium"
+                          className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700"
                         >
                           {skill}
                         </span>
@@ -158,7 +157,7 @@ export default function PublicJobs() {
 
                 <div className="mt-4 pt-4 border-t border-slate-200">
                   <Link to={`/jobs/${job.job_id}`}>
-                    <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-full font-semibold">
+                    <Button variant="accent" className="font-semibold">
                       View Details & Apply
                     </Button>
                   </Link>
