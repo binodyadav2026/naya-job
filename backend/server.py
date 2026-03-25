@@ -57,6 +57,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Create the main app
 app = FastAPI()
 
+PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "http://localhost:8001").rstrip("/")
+
 
 
 
@@ -674,9 +676,8 @@ async def apply_to_job(
             content = await resume.read()
             f.write(content)
             
-        # Construct URL (assuming server runs on localhost:8001)
-        # In prod, this should be CDN or S3 URL
-        resume_url = f"http://localhost:8001/static/resumes/{filename}"
+        # Construct a public URL so Placfy can access the uploaded resume.
+        resume_url = f"{PUBLIC_BASE_URL}/static/resumes/{filename}"
 
     # Create application
     application_id = f"app_{uuid.uuid4().hex[:12]}"
